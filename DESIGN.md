@@ -66,3 +66,26 @@ double-booking a slot. LLM-generated structured output should never be the last 
 **`pgvector/pgvector:0.8.7-pg17`, host port 5433.** Pinned image; pg17 rather than pg18 because
 pg18 changed the data directory layout for volumes. Port 5433 avoids clashing with a local
 Postgres.
+
+## STT for Darja: measure, don't guess
+
+**Observed problem.** With `deepgram/nova-3:multi`, «واش تخدمو نهار الجمعة؟» was transcribed as
+«ويستخدمون هال الجمعه»: "Friday" survived, the Darja verbs didn't. The LLM still recovered the
+meaning, but that's luck unless we design for it.
+
+**Two-layer fix.**
+1. *Prompt for noisy input:* the system prompt tells the LLM that transcripts come from ASR that
+   is often wrong for Darja (dialect words turned into similar-sounding MSA, French written in
+   Arabic letters), to interpret by sound and context, and to ask one short clarifying question
+   rather than guess. It also asks for Darja replies to Darja callers.
+2. *Pick the STT model with data:* `evals/stt/benchmark.py` streams the same recorded phrases
+   (Darja, Darja+French, French, English) through every Arabic-capable LiveKit Inference STT
+   model in real time and reports WER, CER and end-of-speech-to-final-transcript latency.
+
+**WER over CER as the headline metric.** On the example above CER is only 0.17 (most letters
+survive) while WER is 0.75 (3 of 4 words wrong), and WER is much closer to whether the meaning
+got through. Both are computed after normalizing spelling variants that Darja has no standard
+for (alef/hamza forms, taa marbuta, diacritics, Latin accents).
+
+**Limits.** One speaker, 11 phrases: enough to rank providers for this demo, not a general claim.
+Recordings stay out of git (it's a person's voice).

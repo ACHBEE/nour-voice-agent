@@ -8,3 +8,4 @@ bookings.jsonl
 .pytest_cache/
 .ruff_cache/
 *.egg-info/
+evals/stt/recordings/
