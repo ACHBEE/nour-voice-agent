@@ -113,3 +113,46 @@ energy above 4 kHz (telephone-band audio), which hurts every model on Arabic fri
 also what real phone calls sound like. (3) Absolute Darja WER is high for every provider:
 Darja ASR is an unsolved problem off the shelf, which is why the prompt is designed to tolerate
 bad transcripts and ask for clarification.
+
+## Phase 2: RAG service over gRPC
+
+**Separate service, gRPC between agent and RAG.** Retrieval has its own lifecycle and resource
+profile: a ~470 MB embedding model and a DB pool, warm-loaded once. The voice agent should stay
+lean and restart fast. gRPC over REST because the contract is typed and versioned
+(`nour.rag.v1`), stubs are generated (`scripts/gen_proto.py`, never hand-edited), binary
+framing is cheap, and the standard gRPC health service gives Docker a real readiness probe.
+Measured round trip: **~40-65 ms** (embed ~18 ms, Postgres + fusion ~10-16 ms).
+
+**fastembed (ONNX Runtime) instead of sentence-transformers.** Same e5 weights, but no PyTorch:
+~470 MB instead of 2+ GB of dependencies, faster cold start, smaller Docker image, cheaper CI.
+`multilingual-e5-small` isn't in fastembed's catalog, so it's registered as a custom model from
+the official repo's ONNX export. e5's `query:` / `passage:` prefixes are applied. Query embedding
+takes ~18 ms on a laptop CPU.
+
+**Chunking: one chunk per markdown section, ~150 chars median, contextual header.** The docs are
+written as short sections that each answer one question, so headings are natural boundaries;
+fixed-size windows would cut facts in half. Each chunk is prefixed with
+`<doc title> › <section>` so "2000 DZD" carries "Tarifs › Consultations" with it, for both the
+embedding and the LLM. 15 docs → 88 chunks. Long sections (>900 chars) split on paragraphs.
+
+**Keyword search details.** (1) Each chunk is matched with its own language's stemmer, chosen at
+ingest. (2) Query words that are a stopword in *any* language are dropped first; otherwise English
+"the" survives as a junk term against French/Arabic chunks. (3) Terms are OR-ed: `plainto_tsquery`
+ANDs every word, which almost never matches a spoken question. `ts_rank_cd` still rewards chunks
+matching more terms.
+
+**RRF with k=60.** It fuses ranks, not scores, so cosine similarity and `ts_rank_cd` (incomparable
+scales) need no normalization. **Known weakness, measured in Phase 5:** keyword search is
+language-bound, so for a cross-lingual query its list fills with same-language chunks, and RRF's
+reward for "in both lists" can push the right foreign-language chunk down. Examples: "Who is the
+pediatrician?" (vector #1, hybrid #4); "Do you accept the Chifa card?" (the Arabic insurance doc
+is outside the top 3). Levers to test with data: weighted RRF, cross-lingual aliases in docs,
+or a bigger embedding model.
+
+**Incremental, idempotent ingestion.** Content hash per document: unchanged docs are skipped,
+changed docs are re-chunked and re-embedded in one transaction, deleted files are removed.
+`--force` re-embeds everything (needed after changing the embedding model).
+
+**Windows note.** psycopg's async mode can't use Windows' default Proactor event loop; the pool
+then retries silently forever. `rag_service/aio.run()` selects the selector loop on Windows, and
+pool opening has a timeout so a bad DB fails in seconds instead of hanging.
