@@ -48,6 +48,11 @@ logger = logging.getLogger("orchestrator")
 
 _ARABIC = re.compile(r"[؀-ۿ]")
 _FRENCH = re.compile(r"[éèêàçù]|\b(je|vous|est|les|quel|quelle|combien|bonjour|rendez)\b", re.I)
+# Safety net under the router: asking for an ambulance or civil protection is always an
+# emergency, whatever the LLM decided (it once routed "send the ambulance" to a callback).
+_URGENT_HELP = re.compile(
+    r"ambulan|\bsamu\b|protection civile|إسعاف|اسعاف|لامبيلانس|لمبيلانس|الحماية المدنية", re.I
+)
 
 
 def guess_language(text: str) -> Lang:
@@ -88,6 +93,9 @@ async def route(state: CallState, runtime: Runtime[Deps]) -> dict[str, Any]:
         logger.exception("router failed, falling back to clinic_info")
         text = state["user_text"]
         d = RouteDecision(intent="clinic_info", language=guess_language(text), search_query=text)
+    if d.intent != "emergency" and _URGENT_HELP.search(state["user_text"]):
+        logger.warning("router said %s for an ambulance request: overriding to emergency", d.intent)
+        d.intent = "emergency"
     if d.intent == "clinic_info" and not d.search_query.strip():
         d.search_query = state["user_text"]
     route_ms = _ms(t0)

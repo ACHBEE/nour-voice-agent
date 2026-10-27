@@ -45,8 +45,8 @@ def router_prompt(state: CallState, today: date) -> str:
 intent, for the caller's LATEST message:
 - clinic_info: a question about the clinic: hours, prices, doctors, departments, location, insurance or Chifa card, test preparation, policies, anything answerable from clinic documents.
 - book_appointment: wants an appointment, or gives, corrects or confirms booking details while a booking is in progress, or says yes to an offered appointment.
-- human_callback: wants to talk to a person or be called back, accepts an offered callback, or gives callback details while a callback request is in progress.
-- emergency: describes an urgent or severe situation (chest pain, trouble breathing, heavy bleeding, fainting, an accident, a child with convulsions...) or says it is an emergency.
+- human_callback: wants to talk to a person or be called back, accepts an offered callback, or gives callback details while a callback request is in progress. Never for urgent help.
+- emergency: describes an urgent or severe situation (chest pain, trouble breathing, heavy bleeding, fainting, an accident, a child with convulsions...), says it is an emergency, or asks for an ambulance or urgent transport. When unsure between emergency and another intent, choose emergency.
 - medical_advice: asks for a diagnosis, a treatment, a medication or dose, or what their symptoms or results mean, without signs of an emergency.
 - smalltalk: greetings, thanks, goodbye, or anything else that needs no clinic information.
 

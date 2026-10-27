@@ -152,6 +152,24 @@ def test_safety_intents_use_fixed_phrases_never_the_llm(intent):
     assert [kind for kind, _ in llm.calls] == ["RouteDecision"]  # no generation call at all
 
 
+@pytest.mark.parametrize(
+    ("text", "lang", "router_says"),
+    [
+        ("can you send the ambulance?", "en", route("human_callback", lang="en")),
+        ("Envoyez-moi une ambulance s'il vous plaît", "fr", route("clinic_info", lang="fr", q="x")),
+        ("بعثولي لامبيلانس راهو بابا طاح", "ar", route("human_callback", lang="ar")),
+        ("ابعثو سيارة الإسعاف", "ar", TimeoutError("router down")),
+    ],
+)
+def test_ambulance_requests_always_get_the_emergency_phrase(text, lang, router_says):
+    """Regression: "can you send the ambulance?" was once routed to a callback form."""
+    store = FakeStore()
+    orch = make(FakeLLM(router_says), store=store)
+    assert say(orch, text) == phrase("emergency", lang)
+    s = state(orch)
+    assert s["intent"] == "emergency" and not s.get("callback")
+
+
 def test_smalltalk_skips_retrieval():
     rag = FakeRag()
     orch = make(FakeLLM(route("smalltalk", lang="en"), answer="You're welcome!"), rag)

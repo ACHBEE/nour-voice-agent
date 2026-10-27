@@ -206,3 +206,10 @@ first spoken word, which matters on a phone line. Levers to measure in Phase 5: 
 model (gpt-4.1-nano), retrieving in parallel with routing, prewarming, and the filler phrase.
 Known grounding gap: "Do you do MRI?" was answered correctly, but the only doc that says so
 (Arabic `departments`) wasn't in the top 5, the cross-lingual retrieval weakness from Phase 2.
+
+**Safety routing has a deterministic floor.** Found in manual testing: after "I have chest
+pain", "can you send the ambulance?" was routed to a callback form ("a staff member can call
+you back"). Fixed twice: the router prompt now counts ambulance / urgent-transport requests as
+emergencies and prefers emergency when unsure, and a keyword net (ambulance, SAMU, protection
+civile, إسعاف, لامبيلانس, الحماية المدنية) overrides any other intent, including when the router
+is down. Tests misroute on purpose to prove the floor holds; the prompt fix alone now routes it.
