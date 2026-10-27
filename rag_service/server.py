@@ -75,18 +75,24 @@ async def serve() -> None:
     embedder.embed_query("warmup")  # load weights before accepting traffic
     pool = AsyncConnectionPool(DATABASE_URL, min_size=1, max_size=5, open=False)
     await pool.open(wait=True, timeout=15)  # fail fast instead of retrying forever
+    server, port = await build_server(Retriever(pool, embedder), RAG_GRPC_PORT)
     try:
-        server, port = await build_server(Retriever(pool, embedder), RAG_GRPC_PORT)
         await server.start()
-        logger.info("RAG gRPC server listening on :%d", port)
+        logger.info("RAG gRPC server listening on :%d (Ctrl+C to stop)", port)
         await server.wait_for_termination()
     finally:
+        # Ctrl+C cancels wait_for_termination: drain in-flight requests, then release the pool,
+        # while the event loop is still alive (otherwise grpc's __del__ hits a closed loop).
+        await server.stop(grace=2)
         await pool.close()
 
 
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
-    run(serve())
+    try:
+        run(serve())
+    except KeyboardInterrupt:
+        logger.info("RAG gRPC server stopped")
 
 
 if __name__ == "__main__":
