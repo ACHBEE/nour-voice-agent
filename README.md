@@ -4,7 +4,7 @@ A production-style voice AI agent that answers calls for a fictional Algerian cl
 in **Arabic (incl. Darja), French and English**, answers questions from clinic documents,
 and books appointments with validated structured outputs.
 
-> Status: voice agent wired to the LangGraph orchestrator (grounded RAG answers over gRPC, bookings and callbacks in Postgres, safety phrases, filler on slow turns). Evals and latency report next.
+> Status: voice agent wired to the LangGraph orchestrator (grounded RAG answers over gRPC, bookings and callbacks in Postgres, safety phrases, filler on slow turns). Evals done (results below); Docker + CI next.
 
 ## Architecture (target)
 
@@ -63,14 +63,44 @@ tests/            unit tests
 | speechmatics/linden-1:ar | 0.67 | 1.00 | 0.78 | 0.85 s |
 | deepgram/nova-3:multi (previous default) | 1.00 | 0.33 | 0.87 | 0.57 s |
 
-### Voice pipeline and RAG
+### Assistant quality: 38-case eval set (measured)
 
-| Metric | Value |
+French, English, Darja and Modern Standard Arabic questions, many cross-lingual (an English
+question whose answer is only in an Arabic document). Answers graded by an LLM judge
+(`openai/gpt-4.1`, rubric in [evals/judge_rubric.md](evals/judge_rubric.md)) against a
+reference; answer and router model `openai/gpt-4.1-mini`. Run: `python evals/run_evals.py`.
+
+| Metric | Single search query | Multi-query retrieval + grounding rule |
+|---|---|---|
+| Retrieval hit@5 / MRR (22 answerable) | 77% / 0.54 | **100% / 0.91** |
+| Answer correctness, LLM-as-judge (22 answerable) | 73% | **95%** |
+| Answers grounded in retrieved chunks | 82% | **95%** |
+| "Don't have that info" + callback offer (4 not in docs) | 75% | **100%** |
+| Medical advice refused (4) | 100% | 100% |
+| Emergencies routed to the fixed safety phrase (4) | 100% | 100% |
+| Replies containing medical advice (all 38) | 0 | 0 |
+| Intent accuracy (all 38) | 100% | 100% |
+| Orchestrator time to first text, p50 / p95 | 1.09 / 1.49 s | 1.28 / 1.80 s |
+
+One run each, so one case moves a rate by 4.5 points (22 cases) or 25 points (4 cases). Full
+runs with every reply and judge reason: [evals/results/](evals/results/). How these choices
+were made: [DESIGN.md, Phase 5](DESIGN.md#phase-5-evals-and-what-they-changed).
+
+Retrieval alone, on the raw caller question (no LLM, runs in CI):
+
+| Search mode | hit@1 | hit@5 | MRR |
+|---|---|---|---|
+| Hybrid (vector + full-text, RRF) | 55% | 77% | 0.60 |
+| Vector only (multilingual-e5-small) | 64% | 82% | 0.70 |
+| Full-text only | 50% | 50% | 0.50 |
+
+### Latency
+
+| Stage | Value |
 |---|---|
-| p50 / p95 end-to-end turn latency | not measured yet (Phase 5) |
-| RAG search round trip over gRPC (laptop CPU) | ~40-65 ms (embed ~18 ms, search ~10-16 ms) |
-| Retrieval hit rate@k | not measured yet (Phase 5) |
-| Answer correctness (LLM-as-judge) | not measured yet (Phase 5) |
+| RAG search over gRPC (laptop CPU) | ~40-65 ms per query (embed ~18 ms, search ~10-16 ms) |
+| Orchestrator, text (router + 4 parallel searches + answer TTFT) | p50 1.28 s, p95 1.80 s to first text |
+| Voice end to end (caller stops -> Nour speaks) | not measured yet on the current pipeline: needs a call, then `python evals/latency_report.py --since <date>` |
 
 ## Design decisions
 See [DESIGN.md](DESIGN.md).

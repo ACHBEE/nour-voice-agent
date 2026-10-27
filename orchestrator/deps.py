@@ -33,4 +33,5 @@ class Deps:
     rag: RagSearch
     store: Store
     call_id: str = "local"
+    router_llm: LLMClient | None = None  # defaults to llm
     today: Callable[[], date] = field(default=clinic_today)

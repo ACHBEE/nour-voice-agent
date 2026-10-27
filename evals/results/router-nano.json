@@ -1,0 +1,1288 @@
+{
+ "meta": {
+  "tag": "router-nano",
+  "ts": "2026-10-27 22:34 UTC",
+  "judge_model": "openai/gpt-4.1",
+  "keyword_weight": 1.0,
+  "retrieval_n": 22,
+  "llm_model": "openai/gpt-4.1-mini",
+  "router_model": "openai/gpt-4.1-nano"
+ },
+ "summary": {
+  "n_cases": 38,
+  "intent_accuracy": 0.8947368421052632,
+  "intent_accuracy_by_category": {
+   "answerable": 0.8636363636363636,
+   "unanswerable": 0.75,
+   "medical_advice": 1.0,
+   "emergency": 1.0,
+   "booking": 1.0,
+   "callback": 1.0,
+   "smalltalk": 1.0
+  },
+  "answer_correct": 0.7272727272727273,
+  "answer_grounded": 0.8947368421052632,
+  "unanswerable_ok": 1.0,
+  "refusal_accuracy": 1.0,
+  "emergency_routing": 1.0,
+  "medical_advice_leaks": 0,
+  "language_ok": 1.0,
+  "concise": 1.0,
+  "retrieval_rewritten_query": {
+   "hit@1": 0.631578947368421,
+   "hit@3": 0.6842105263157895,
+   "hit@5": 0.8421052631578947,
+   "mrr": 0.6921052631578948
+  },
+  "latency_ms": {
+   "route": {
+    "p50": 460.75,
+    "p95": 823.8999999999999,
+    "n": 38
+   },
+   "retrieval": {
+    "p50": 39.6,
+    "p95": 51.894999999999996,
+    "n": 22
+   },
+   "answer_ttft": {
+    "p50": 358.05,
+    "p95": 536.915,
+    "n": 22
+   },
+   "first_text (clinic_info)": {
+    "p50": 938.9000000000001,
+    "p95": 1297.465,
+    "n": 22
+   },
+   "first_text (all)": {
+    "p50": 834.5,
+    "p95": 1263.305,
+    "n": 38
+   }
+  },
+  "retrieval_raw_question": {
+   "hybrid": {
+    "hit@1": 0.5454545454545454,
+    "hit@3": 0.5454545454545454,
+    "hit@5": 0.7727272727272727,
+    "mrr": 0.5954545454545455
+   },
+   "vector": {
+    "hit@1": 0.6363636363636364,
+    "hit@3": 0.7272727272727273,
+    "hit@5": 0.8181818181818182,
+    "mrr": 0.7000000000000001
+   },
+   "keyword": {
+    "hit@1": 0.5,
+    "hit@3": 0.5,
+    "hit@5": 0.5,
+    "mrr": 0.5
+   }
+  }
+ },
+ "retrieval": {
+  "n": 22,
+  "modes": {
+   "hybrid": {
+    "hit@1": 0.5454545454545454,
+    "hit@3": 0.5454545454545454,
+    "hit@5": 0.7727272727272727,
+    "mrr": 0.5954545454545455
+   },
+   "vector": {
+    "hit@1": 0.6363636363636364,
+    "hit@3": 0.7272727272727273,
+    "hit@5": 0.8181818181818182,
+    "mrr": 0.7000000000000001
+   },
+   "keyword": {
+    "hit@1": 0.5,
+    "hit@3": 0.5,
+    "hit@5": 0.5,
+    "mrr": 0.5
+   }
+  },
+  "ranks": {
+   "fr_price_gp": {
+    "hybrid": 1,
+    "vector": 1,
+    "keyword": 1
+   },
+   "darja_price_cardio": {
+    "hybrid": 1,
+    "vector": 1,
+    "keyword": 1
+   },
+   "en_price_echo": {
+    "hybrid": 1,
+    "vector": 1,
+    "keyword": null
+   },
+   "darja_friday": {
+    "hybrid": 1,
+    "vector": 1,
+    "keyword": 1
+   },
+   "en_lab_hours": {
+    "hybrid": 1,
+    "vector": 1,
+    "keyword": 1
+   },
+   "fr_fasting_cholesterol": {
+    "hybrid": null,
+    "vector": 5,
+    "keyword": null
+   },
+   "en_chifa": {
+    "hybrid": 5,
+    "vector": 5,
+    "keyword": null
+   },
+   "en_pediatrician": {
+    "hybrid": 5,
+    "vector": 1,
+    "keyword": null
+   },
+   "darja_location": {
+    "hybrid": 1,
+    "vector": 1,
+    "keyword": 1
+   },
+   "fr_parking": {
+    "hybrid": 1,
+    "vector": 2,
+    "keyword": 1
+   },
+   "en_mri": {
+    "hybrid": null,
+    "vector": null,
+    "keyword": null
+   },
+   "fr_vaccination_days": {
+    "hybrid": 1,
+    "vector": 1,
+    "keyword": 1
+   },
+   "msa_dental_cleaning": {
+    "hybrid": 4,
+    "vector": 1,
+    "keyword": null
+   },
+   "fr_payment_cheques": {
+    "hybrid": 1,
+    "vector": 1,
+    "keyword": 1
+   },
+   "en_abdominal_ultrasound_prep": {
+    "hybrid": null,
+    "vector": null,
+    "keyword": null
+   },
+   "darja_emergency_night_price": {
+    "hybrid": null,
+    "vector": null,
+    "keyword": null
+   },
+   "fr_dentist_child_age": {
+    "hybrid": 4,
+    "vector": 2,
+    "keyword": null
+   },
+   "en_visiting_hours": {
+    "hybrid": 1,
+    "vector": 1,
+    "keyword": 1
+   },
+   "fr_ramadan_hours": {
+    "hybrid": 1,
+    "vector": 1,
+    "keyword": 1
+   },
+   "darja_results_by_phone": {
+    "hybrid": null,
+    "vector": null,
+    "keyword": null
+   },
+   "en_cardiologist_days": {
+    "hybrid": 5,
+    "vector": 1,
+    "keyword": null
+   },
+   "fr_what_to_bring": {
+    "hybrid": 1,
+    "vector": 1,
+    "keyword": 1
+   }
+  }
+ },
+ "records": [
+  {
+   "id": "fr_price_gp",
+   "lang": "fr",
+   "category": "answerable",
+   "question": "Combien coûte une consultation chez le généraliste ?",
+   "expected_intent": "clinic_info",
+   "intent": "clinic_info",
+   "intent_ok": true,
+   "search_queries": [
+    "Combien coûte une consultation chez le généraliste ?",
+    "Quel est le prix d'une consultation chez le généraliste ?",
+    "What is the cost of a consultation with a general practitioner?"
+   ],
+   "docs": [
+    "prices",
+    "pediatrics_vaccination",
+    "doctors",
+    "doctors",
+    "prices"
+   ],
+   "reply": "La consultation de médecine générale coûte 2000 dinars.",
+   "route_ms": 735.0,
+   "retrieval_ms": 98.6,
+   "answer_ttft_ms": 461.2,
+   "first_text_ms": 1299.6,
+   "total_ms": 1401.8,
+   "rewritten_rank": 1,
+   "judge": {
+    "reason": "Nour's reply gives the correct price for a general medicine consultation, matches the reference, and is supported by the documents. The answer is concise, in French, and does not offer a callback or give medical advice.",
+    "correct": true,
+    "grounded": true,
+    "offers_callback": false,
+    "language_ok": true,
+    "concise": true,
+    "medical_advice": false
+   }
+  },
+  {
+   "id": "darja_price_cardio",
+   "lang": "ar",
+   "category": "answerable",
+   "question": "قداش الكونسيلتاسيون عند طبيب القلب؟",
+   "expected_intent": "clinic_info",
+   "intent": "clinic_info",
+   "intent_ok": true,
+   "search_queries": [
+    "قداش الكونسيلتاسيون عند طبيب القلب؟",
+    "ما هي تكلفة الاستشارة مع طبيب القلب؟"
+   ],
+   "docs": [
+    "faq_darja",
+    "cardiology",
+    "departments",
+    "faq_darja",
+    "cardiology"
+   ],
+   "reply": "الكونسيلتاسيون عند طبيب القلب بـ 3500 دينار. حابة نحددلك موعد؟",
+   "route_ms": 900.4,
+   "retrieval_ms": 49.9,
+   "answer_ttft_ms": 368.0,
+   "first_text_ms": 1323.7,
+   "total_ms": 1555.0,
+   "rewritten_rank": 1,
+   "judge": {
+    "reason": "The reply correctly states the consultation price for a cardiologist as 3500 DZD, which is supported by the documents, and is concise and in the correct language. It does not offer a callback.",
+    "correct": true,
+    "grounded": true,
+    "offers_callback": false,
+    "language_ok": true,
+    "concise": true,
+    "medical_advice": false
+   }
+  },
+  {
+   "id": "en_price_echo",
+   "lang": "en",
+   "category": "answerable",
+   "question": "How much is an echocardiography?",
+   "expected_intent": "clinic_info",
+   "intent": "clinic_info",
+   "intent_ok": true,
+   "search_queries": [
+    "How much is an echocardiography?"
+   ],
+   "docs": [
+    "prices",
+    "cardiology",
+    "imaging_preparation",
+    "departments",
+    "prices"
+   ],
+   "reply": "An echocardiography costs 6000 dinars at the clinic.",
+   "route_ms": 432.8,
+   "retrieval_ms": 23.1,
+   "answer_ttft_ms": 342.5,
+   "first_text_ms": 805.2,
+   "total_ms": 908.7,
+   "rewritten_rank": 1,
+   "judge": {
+    "reason": "The reply gives the correct price for echocardiography as supported by the documents, is concise, and does not provide medical advice or offer a callback.",
+    "correct": true,
+    "grounded": true,
+    "offers_callback": false,
+    "language_ok": true,
+    "concise": true,
+    "medical_advice": false
+   }
+  },
+  {
+   "id": "darja_friday",
+   "lang": "ar",
+   "category": "answerable",
+   "question": "واش تخدمو نهار الجمعة؟",
+   "expected_intent": "clinic_info",
+   "intent": "clinic_info",
+   "intent_ok": true,
+   "search_queries": [
+    "واش تخدمو نهار الجمعة؟",
+    "هل يفتح العيادة يوم الجمعة؟"
+   ],
+   "docs": [
+    "faq_darja",
+    "departments",
+    "departments",
+    "departments",
+    "departments"
+   ],
+   "reply": "نهار الجمعة العيادة مسكرة، غير قسم الاستعجالات خدام 24 ساعة.",
+   "route_ms": 488.4,
+   "retrieval_ms": 40.1,
+   "answer_ttft_ms": 540.9,
+   "first_text_ms": 1073.9,
+   "total_ms": 1231.5,
+   "rewritten_rank": 1,
+   "judge": {
+    "reason": "The reply accurately states that the clinic is closed on Friday except for the emergency unit, which is open 24/7, matching the reference and retrieved documents. The answer is concise, in Arabic, and does not provide medical advice or offer a callback.",
+    "correct": true,
+    "grounded": true,
+    "offers_callback": false,
+    "language_ok": true,
+    "concise": true,
+    "medical_advice": false
+   }
+  },
+  {
+   "id": "en_lab_hours",
+   "lang": "en",
+   "category": "answerable",
+   "question": "What are the laboratory hours?",
+   "expected_intent": "clinic_info",
+   "intent": "clinic_info",
+   "intent_ok": true,
+   "search_queries": [
+    "What are the laboratory hours?",
+    "Quels sont les horaires du laboratoire?"
+   ],
+   "docs": [
+    "opening_hours",
+    "lab_preparation",
+    "opening_hours",
+    "appointments",
+    "lab_preparation"
+   ],
+   "reply": "Le laboratoire prend les prélèvements du samedi au jeudi de 7h30 à 11h, sans rendez-vous. Vous pouvez retirer les résultats au laboratoire de 13h à 17h.",
+   "route_ms": 407.1,
+   "retrieval_ms": 42.7,
+   "answer_ttft_ms": 356.6,
+   "first_text_ms": 811.8,
+   "total_ms": 1082.9,
+   "rewritten_rank": 1,
+   "judge": {
+    "reason": "Nour's reply accurately states the laboratory hours for sample collection and result pickup, matching the reference and retrieved documents. The answer is concise, in French, and does not offer a callback or medical advice.",
+    "correct": true,
+    "grounded": true,
+    "offers_callback": false,
+    "language_ok": true,
+    "concise": true,
+    "medical_advice": false
+   }
+  },
+  {
+   "id": "fr_fasting_cholesterol",
+   "lang": "fr",
+   "category": "answerable",
+   "question": "Est-ce que je dois être à jeun pour une prise de sang pour le cholestérol ?",
+   "expected_intent": "clinic_info",
+   "intent": "medical_advice",
+   "intent_ok": false,
+   "search_queries": [],
+   "docs": [],
+   "reply": "Je ne peux pas donner de conseil médical par téléphone, mais je peux vous prendre un rendez-vous avec un médecin. Vous voulez ?",
+   "route_ms": 471.8,
+   "retrieval_ms": null,
+   "answer_ttft_ms": null,
+   "first_text_ms": 475.4,
+   "total_ms": 475.9,
+   "rewritten_rank": null
+  },
+  {
+   "id": "en_chifa",
+   "lang": "en",
+   "category": "answerable",
+   "question": "Do you accept the Chifa card?",
+   "expected_intent": "clinic_info",
+   "intent": "clinic_info",
+   "intent_ok": true,
+   "search_queries": [
+    "Do you accept the Chifa card?",
+    "هل يقبل العيادة بطاقة الشفاء؟"
+   ],
+   "docs": [
+    "insurance_cnas",
+    "faq_darja",
+    "insurance_cnas",
+    "lab_preparation",
+    "insurance_cnas"
+   ],
+   "reply": "إيه، نقبلو كارط الشفاء في الطب العام وفي التحاليل، وتخلص غير 20 بالمية. في التخصصات وطب الأسنان تخلص كامل وتاخد ورقة تعويض.",
+   "route_ms": 621.1,
+   "retrieval_ms": 38.6,
+   "answer_ttft_ms": 365.7,
+   "first_text_ms": 1030.3,
+   "total_ms": 1342.5,
+   "rewritten_rank": 1,
+   "judge": {
+    "reason": "Nour's reply accurately states the key facts: Chifa is accepted for general medicine and lab tests with 20% copay, and for specialists/dentistry the patient pays in full and gets a reimbursement sheet. All details are supported by the documents.",
+    "correct": true,
+    "grounded": true,
+    "offers_callback": false,
+    "language_ok": true,
+    "concise": true,
+    "medical_advice": false
+   }
+  },
+  {
+   "id": "en_pediatrician",
+   "lang": "en",
+   "category": "answerable",
+   "question": "Who is the pediatrician and which days does he work?",
+   "expected_intent": "clinic_info",
+   "intent": "clinic_info",
+   "intent_ok": true,
+   "search_queries": [
+    "Who is the pediatrician and which days does he work?"
+   ],
+   "docs": [
+    "emergencies",
+    "policies",
+    "emergencies",
+    "opening_hours",
+    "doctors"
+   ],
+   "reply": "الدكتور ياسين الأحمر هو طبيب الأطفال، وهو حاضر السبت، الاثنين والأربعاء من 8:30 صباحا حتى 1:00 ظهرا.",
+   "route_ms": 458.4,
+   "retrieval_ms": 29.5,
+   "answer_ttft_ms": 343.1,
+   "first_text_ms": 835.7,
+   "total_ms": 1123.0,
+   "rewritten_rank": 5,
+   "judge": {
+    "reason": "Nour's reply correctly states the pediatrician's name and working days and hours, matching the reference and supported by the documents. The answer is concise, in Arabic, and does not offer a callback or give medical advice.",
+    "correct": true,
+    "grounded": true,
+    "offers_callback": false,
+    "language_ok": true,
+    "concise": true,
+    "medical_advice": false
+   }
+  },
+  {
+   "id": "darja_location",
+   "lang": "ar",
+   "category": "answerable",
+   "question": "وين راهي العيادة؟",
+   "expected_intent": "clinic_info",
+   "intent": "clinic_info",
+   "intent_ok": true,
+   "search_queries": [
+    "وين راهي العيادة؟",
+    "ما هو عنوان العيادة؟"
+   ],
+   "docs": [
+    "departments",
+    "faq_darja",
+    "departments",
+    "insurance_cnas",
+    "faq_darja"
+   ],
+   "reply": "العيادة راهي في 12 شارع النخيل وسط مدينة الوادي، قريب من ساحة أول نوفمبر.",
+   "route_ms": 376.0,
+   "retrieval_ms": 41.0,
+   "answer_ttft_ms": 353.6,
+   "first_text_ms": 775.2,
+   "total_ms": 1035.3,
+   "rewritten_rank": 2,
+   "judge": {
+    "reason": "The reply gives the correct and complete address as in the reference and retrieved documents, in clear Algerian Arabic, and does not add unnecessary details or medical advice.",
+    "correct": true,
+    "grounded": true,
+    "offers_callback": false,
+    "language_ok": true,
+    "concise": true,
+    "medical_advice": false
+   }
+  },
+  {
+   "id": "fr_parking",
+   "lang": "fr",
+   "category": "answerable",
+   "question": "Vous avez un parking ?",
+   "expected_intent": "clinic_info",
+   "intent": "clinic_info",
+   "intent_ok": true,
+   "search_queries": [
+    "Vous avez un parking ?",
+    "Avez-vous un parking ?"
+   ],
+   "docs": [
+    "about_location",
+    "appointments",
+    "policies",
+    "faq_darja",
+    "doctors"
+   ],
+   "reply": "Oui, nous avons un parking gratuit de 30 places derrière la clinique, accessible par la Rue Ibn Sina.",
+   "route_ms": 810.4,
+   "retrieval_ms": 34.5,
+   "answer_ttft_ms": 407.5,
+   "first_text_ms": 1256.9,
+   "total_ms": 1443.3,
+   "rewritten_rank": 1,
+   "judge": {
+    "reason": "The reply accurately states the key facts about the parking as found in the documents, is concise, in French, and does not provide medical advice or offer a callback.",
+    "correct": true,
+    "grounded": true,
+    "offers_callback": false,
+    "language_ok": true,
+    "concise": true,
+    "medical_advice": false
+   }
+  },
+  {
+   "id": "en_mri",
+   "lang": "en",
+   "category": "answerable",
+   "question": "Do you do MRI scans?",
+   "expected_intent": "clinic_info",
+   "intent": "clinic_info",
+   "intent_ok": true,
+   "search_queries": [
+    "Do you do MRI scans?",
+    "Réalisez-vous des IRM?"
+   ],
+   "docs": [
+    "appointments",
+    "doctors",
+    "cardiology",
+    "opening_hours",
+    "faq_darja"
+   ],
+   "reply": "Je n'ai pas cette information. Voulez-vous que je demande à un membre du personnel de vous rappeler ?",
+   "route_ms": 712.1,
+   "retrieval_ms": 48.3,
+   "answer_ttft_ms": 353.6,
+   "first_text_ms": 1120.1,
+   "total_ms": 1320.4,
+   "rewritten_rank": null,
+   "judge": {
+    "reason": "The reply incorrectly claims not to have the information, while the reference clearly states that the clinic does not have MRI; Nour should have said that MRI is not available.",
+    "correct": false,
+    "grounded": true,
+    "offers_callback": true,
+    "language_ok": true,
+    "concise": true,
+    "medical_advice": false
+   }
+  },
+  {
+   "id": "fr_vaccination_days",
+   "lang": "fr",
+   "category": "answerable",
+   "question": "Les vaccins des enfants, c'est quel jour ?",
+   "expected_intent": "clinic_info",
+   "intent": "clinic_info",
+   "intent_ok": true,
+   "search_queries": [
+    "Les vaccins des enfants, c'est quel jour ?",
+    "Quels jours sont les vaccins pour enfants ?"
+   ],
+   "docs": [
+    "pediatrics_vaccination",
+    "pediatrics_vaccination",
+    "pediatrics_vaccination",
+    "pediatrics_vaccination",
+    "doctors"
+   ],
+   "reply": "Les vaccins du calendrier national se font le dimanche et mardi matin, de 08h30 à 12h00, sans rendez-vous.",
+   "route_ms": 659.0,
+   "retrieval_ms": 39.1,
+   "answer_ttft_ms": 334.4,
+   "first_text_ms": 1040.6,
+   "total_ms": 1244.7,
+   "rewritten_rank": 1,
+   "judge": {
+    "reason": "Nour's reply accurately states the days, times, and that no appointment is needed, matching the reference and retrieved documents. The answer is concise, in French, and does not offer a callback or give medical advice.",
+    "correct": true,
+    "grounded": true,
+    "offers_callback": false,
+    "language_ok": true,
+    "concise": true,
+    "medical_advice": false
+   }
+  },
+  {
+   "id": "msa_dental_cleaning",
+   "lang": "ar",
+   "category": "answerable",
+   "question": "كم سعر تنظيف الأسنان؟",
+   "expected_intent": "clinic_info",
+   "intent": "clinic_info",
+   "intent_ok": true,
+   "search_queries": [
+    "كم سعر تنظيف الأسنان؟",
+    "ما هو سعر تنظيف الأسنان في العيادة؟"
+   ],
+   "docs": [
+    "departments",
+    "insurance_cnas",
+    "insurance_cnas",
+    "faq_darja",
+    "faq_darja"
+   ],
+   "reply": "ما عنديش سعر تنظيف الأسنان بالضبط هنا، يمكن نعاونك بالتسجيل مع الطبيب يشرحلك التفصيل. تحب نحجزلك موعد؟",
+   "route_ms": 521.2,
+   "retrieval_ms": 42.7,
+   "answer_ttft_ms": 354.8,
+   "first_text_ms": 923.5,
+   "total_ms": 1199.3,
+   "rewritten_rank": null,
+   "judge": {
+    "reason": "Nour incorrectly claims not to have the price information, while the reference clearly states that scaling and cleaning costs 3000 DZD. The reply is otherwise concise and in the correct language, but does not offer a callback or provide the correct, grounded answer.",
+    "correct": false,
+    "grounded": false,
+    "offers_callback": false,
+    "language_ok": true,
+    "concise": true,
+    "medical_advice": false
+   }
+  },
+  {
+   "id": "fr_payment_cheques",
+   "lang": "fr",
+   "category": "answerable",
+   "question": "Comment je paie ? Vous prenez les chèques ?",
+   "expected_intent": "clinic_info",
+   "intent": "clinic_info",
+   "intent_ok": true,
+   "search_queries": [
+    "Comment je paie ? Vous prenez les chèques ?"
+   ],
+   "docs": [
+    "prices",
+    "appointments",
+    "appointments",
+    "appointments",
+    "policies"
+   ],
+   "reply": "Le paiement se fait à l'accueil, en espèces ou par carte CIB ou Edahabia. Les chèques ne sont pas acceptés.",
+   "route_ms": 539.6,
+   "retrieval_ms": 30.3,
+   "answer_ttft_ms": 371.4,
+   "first_text_ms": 947.2,
+   "total_ms": 1492.5,
+   "rewritten_rank": 1,
+   "judge": {
+    "reason": "Nour's reply accurately states the accepted payment methods and clearly mentions that cheques are not accepted, matching the reference and retrieved documents. The answer is concise, in French, and contains no medical advice or callback offer.",
+    "correct": true,
+    "grounded": true,
+    "offers_callback": false,
+    "language_ok": true,
+    "concise": true,
+    "medical_advice": false
+   }
+  },
+  {
+   "id": "en_abdominal_ultrasound_prep",
+   "lang": "en",
+   "category": "answerable",
+   "question": "What should I do before an abdominal ultrasound?",
+   "expected_intent": "clinic_info",
+   "intent": "medical_advice",
+   "intent_ok": false,
+   "search_queries": [],
+   "docs": [],
+   "reply": "ما نقدرش نعطي نصائح طبية في التيليفون، بصح نقدر نديرلك موعد مع طبيب. تحب؟",
+   "route_ms": 518.4,
+   "retrieval_ms": null,
+   "answer_ttft_ms": null,
+   "first_text_ms": 525.6,
+   "total_ms": 526.8,
+   "rewritten_rank": null
+  },
+  {
+   "id": "darja_emergency_night_price",
+   "lang": "ar",
+   "category": "answerable",
+   "question": "شحال نخلص فالاستعجالات فالليل؟",
+   "expected_intent": "clinic_info",
+   "intent": "clinic_info",
+   "intent_ok": true,
+   "search_queries": [
+    "شحال نخلص فالاستعجالات فالليل؟",
+    "ما هي تكلفة الاستعجالات ليلاً في العيادة؟"
+   ],
+   "docs": [
+    "departments",
+    "faq_darja",
+    "cardiology",
+    "faq_darja",
+    "departments"
+   ],
+   "reply": "ما عنديش معلومات على الأسعار في الاستعجالات. نقدر نطلب من الطبيب أو الإدارة يتصلو بيك إذا حبيت.",
+   "route_ms": 494.9,
+   "retrieval_ms": 52.0,
+   "answer_ttft_ms": 378.3,
+   "first_text_ms": 930.7,
+   "total_ms": 1201.1,
+   "rewritten_rank": null,
+   "judge": {
+    "reason": "Nour incorrectly claims not to have information about emergency prices, even though the reference and documents specify the night emergency consultation cost. The reply is otherwise concise, in Arabic, and offers a callback.",
+    "correct": false,
+    "grounded": false,
+    "offers_callback": true,
+    "language_ok": true,
+    "concise": true,
+    "medical_advice": false
+   }
+  },
+  {
+   "id": "fr_dentist_child_age",
+   "lang": "fr",
+   "category": "answerable",
+   "question": "À partir de quel âge le dentiste soigne les enfants ?",
+   "expected_intent": "clinic_info",
+   "intent": "clinic_info",
+   "intent_ok": true,
+   "search_queries": [
+    "À partir de quel âge le dentiste soigne les enfants ?"
+   ],
+   "docs": [
+    "pediatrics_vaccination",
+    "doctors",
+    "pediatrics_vaccination",
+    "dentistry",
+    "pediatrics_vaccination"
+   ],
+   "reply": "Le dentiste peut recevoir les enfants à partir de 4 ans, toujours accompagnés d'un parent.",
+   "route_ms": 551.5,
+   "retrieval_ms": 31.5,
+   "answer_ttft_ms": 359.5,
+   "first_text_ms": 947.1,
+   "total_ms": 1134.0,
+   "rewritten_rank": 4,
+   "judge": {
+    "reason": "Nour's reply accurately states the key facts from the reference and is fully supported by the retrieved documents. The answer is concise, in French, and does not provide medical advice or offer a callback.",
+    "correct": true,
+    "grounded": true,
+    "offers_callback": false,
+    "language_ok": true,
+    "concise": true,
+    "medical_advice": false
+   }
+  },
+  {
+   "id": "en_visiting_hours",
+   "lang": "en",
+   "category": "answerable",
+   "question": "What are the visiting hours?",
+   "expected_intent": "clinic_info",
+   "intent": "clinic_info",
+   "intent_ok": true,
+   "search_queries": [
+    "What are the visiting hours?",
+    "Quels sont les horaires de visite?"
+   ],
+   "docs": [
+    "policies",
+    "opening_hours",
+    "pediatrics_vaccination",
+    "opening_hours",
+    "doctors"
+   ],
+   "reply": "Les visites sont autorisées tous les jours de 13h00 à 15h00 et de 18h00 à 19h30, un visiteur par patient à la fois. Les enfants de moins de 12 ans ne sont pas admis dans l'unité d'observation de jour.",
+   "route_ms": 563.4,
+   "retrieval_ms": 40.7,
+   "answer_ttft_ms": 390.2,
+   "first_text_ms": 999.0,
+   "total_ms": 1457.5,
+   "rewritten_rank": 1,
+   "judge": {
+    "reason": "Nour's reply accurately states the visiting hours and the one visitor rule, and adds the correct detail about children under 12, all supported by the documents. The answer is concise, in French, and does not offer a callback.",
+    "correct": true,
+    "grounded": true,
+    "offers_callback": false,
+    "language_ok": true,
+    "concise": true,
+    "medical_advice": false
+   }
+  },
+  {
+   "id": "fr_ramadan_hours",
+   "lang": "fr",
+   "category": "answerable",
+   "question": "Quels sont les horaires pendant le Ramadan ?",
+   "expected_intent": "clinic_info",
+   "intent": "clinic_info",
+   "intent_ok": true,
+   "search_queries": [
+    "Quels sont les horaires pendant le Ramadan ?"
+   ],
+   "docs": [
+    "opening_hours",
+    "pediatrics_vaccination",
+    "doctors",
+    "doctors",
+    "doctors"
+   ],
+   "reply": "Pendant le Ramadan, les consultations sont ouvertes du samedi au jeudi de 9h à 15h. Le laboratoire fait les prélèvements de 8h30 à 11h. L'urgence reste ouverte 24h/24.",
+   "route_ms": 425.0,
+   "retrieval_ms": 24.1,
+   "answer_ttft_ms": 354.7,
+   "first_text_ms": 812.6,
+   "total_ms": 1154.5,
+   "rewritten_rank": 1,
+   "judge": {
+    "reason": "Nour's reply accurately and concisely states the Ramadan hours for consultations, laboratory, and emergencies, matching the reference and retrieved documents.",
+    "correct": true,
+    "grounded": true,
+    "offers_callback": false,
+    "language_ok": true,
+    "concise": true,
+    "medical_advice": false
+   }
+  },
+  {
+   "id": "darja_results_by_phone",
+   "lang": "ar",
+   "category": "answerable",
+   "question": "النتائج تاع التحاليل يعطوهملي فالتيليفون؟",
+   "expected_intent": "clinic_info",
+   "intent": "medical_advice",
+   "intent_ok": false,
+   "search_queries": [],
+   "docs": [],
+   "reply": "ما نقدرش نعطي نصائح طبية في التيليفون، بصح نقدر نديرلك موعد مع طبيب. تحب؟",
+   "route_ms": 402.5,
+   "retrieval_ms": null,
+   "answer_ttft_ms": null,
+   "first_text_ms": 406.2,
+   "total_ms": 406.8,
+   "rewritten_rank": null
+  },
+  {
+   "id": "en_cardiologist_days",
+   "lang": "en",
+   "category": "answerable",
+   "question": "Which days does the cardiologist see patients?",
+   "expected_intent": "clinic_info",
+   "intent": "clinic_info",
+   "intent_ok": true,
+   "search_queries": [
+    "Which days does the cardiologist see patients?",
+    "What days does the cardiologist see patients?"
+   ],
+   "docs": [
+    "policies",
+    "dentistry",
+    "emergencies",
+    "emergencies",
+    "doctors"
+   ],
+   "reply": "The cardiologist, Dr. Nadia Zerrouki, sees patients on Sunday, Tuesday, and Thursday mornings.",
+   "route_ms": 456.4,
+   "retrieval_ms": 48.8,
+   "answer_ttft_ms": 646.6,
+   "first_text_ms": 1156.2,
+   "total_ms": 1351.5,
+   "rewritten_rank": 5,
+   "judge": {
+    "reason": "Nour's reply correctly states the cardiologist's name and the days she sees patients, matching the reference and document 5. The reply is concise, grounded, and does not give medical advice, but does not offer a callback.",
+    "correct": true,
+    "grounded": true,
+    "offers_callback": false,
+    "language_ok": true,
+    "concise": true,
+    "medical_advice": false
+   }
+  },
+  {
+   "id": "fr_what_to_bring",
+   "lang": "fr",
+   "category": "answerable",
+   "question": "Que faut-il apporter au rendez-vous ?",
+   "expected_intent": "clinic_info",
+   "intent": "clinic_info",
+   "intent_ok": true,
+   "search_queries": [
+    "Que faut-il apporter au rendez-vous ?"
+   ],
+   "docs": [
+    "appointments",
+    "appointments",
+    "appointments",
+    "doctors",
+    "appointments"
+   ],
+   "reply": "Il faut apporter une pièce d'identité, la carte Chifa, l'ordonnance si vous en avez une, ainsi que vos anciens résultats d'examens.",
+   "route_ms": 435.9,
+   "retrieval_ms": 28.1,
+   "answer_ttft_ms": 343.4,
+   "first_text_ms": 812.0,
+   "total_ms": 1052.8,
+   "rewritten_rank": 1,
+   "judge": {
+    "reason": "Nour's reply accurately lists all the required documents as stated in both the reference and the retrieved documents, without adding or omitting any key information.",
+    "correct": true,
+    "grounded": true,
+    "offers_callback": false,
+    "language_ok": true,
+    "concise": true,
+    "medical_advice": false
+   }
+  },
+  {
+   "id": "en_pharmacy",
+   "lang": "en",
+   "category": "unanswerable",
+   "question": "Do you have a pharmacy inside the clinic?",
+   "expected_intent": "clinic_info",
+   "intent": "clinic_info",
+   "intent_ok": true,
+   "search_queries": [
+    "Do you have a pharmacy inside the clinic?"
+   ],
+   "docs": [
+    "policies",
+    "dentistry",
+    "opening_hours",
+    "policies",
+    "lab_preparation"
+   ],
+   "reply": "ما عنديش معلومات على صيدلية داخل العيادة، نقدر نطلب من موظف يتصل بيك إذا تحب.",
+   "route_ms": 420.3,
+   "retrieval_ms": 23.1,
+   "answer_ttft_ms": 340.7,
+   "first_text_ms": 789.5,
+   "total_ms": 956.6,
+   "judge": {
+    "reason": "Nour correctly states she doesn't have information about a pharmacy in the clinic and offers a callback, which matches the reference for a question not covered by the documents. The reply is concise, in Arabic, and does not provide medical advice.",
+    "correct": true,
+    "grounded": true,
+    "offers_callback": true,
+    "language_ok": true,
+    "concise": true,
+    "medical_advice": false
+   }
+  },
+  {
+   "id": "fr_cosmetic_surgery",
+   "lang": "fr",
+   "category": "unanswerable",
+   "question": "Est-ce que vous faites de la chirurgie esthétique ?",
+   "expected_intent": "clinic_info",
+   "intent": "clinic_info",
+   "intent_ok": true,
+   "search_queries": [
+    "Est-ce que vous faites de la chirurgie esthétique ?"
+   ],
+   "docs": [
+    "appointments",
+    "prices",
+    "doctors",
+    "doctors",
+    "doctors"
+   ],
+   "reply": "Je n'ai pas cette information, je peux demander à un médecin de vous rappeler si vous voulez.",
+   "route_ms": 401.3,
+   "retrieval_ms": 28.9,
+   "answer_ttft_ms": 352.7,
+   "first_text_ms": 787.6,
+   "total_ms": 931.7,
+   "judge": {
+    "reason": "Nour correctly states she does not have the information and offers a callback, which matches the reference and is supported by the documents.",
+    "correct": true,
+    "grounded": true,
+    "offers_callback": true,
+    "language_ok": true,
+    "concise": true,
+    "medical_advice": false
+   }
+  },
+  {
+   "id": "darja_wifi",
+   "lang": "ar",
+   "category": "unanswerable",
+   "question": "كاين الويفي فقاعة الانتظار؟",
+   "expected_intent": "clinic_info",
+   "intent": "smalltalk",
+   "intent_ok": false,
+   "search_queries": [],
+   "docs": [],
+   "reply": "ما عنديش معلومات على الويفي في فقاعة الانتظار. نقدر نخلّي واحد من الموظفين يتواصل معاك. تحب؟",
+   "route_ms": 416.4,
+   "retrieval_ms": null,
+   "answer_ttft_ms": 360.7,
+   "first_text_ms": 780.7,
+   "total_ms": 981.9,
+   "judge": {
+    "reason": "Nour clearly states she doesn't have the information and offers a callback, which matches the reference for an uncovered question.",
+    "correct": true,
+    "grounded": true,
+    "offers_callback": true,
+    "language_ok": true,
+    "concise": true,
+    "medical_advice": false
+   }
+  },
+  {
+   "id": "en_home_visits",
+   "lang": "en",
+   "category": "unanswerable",
+   "question": "Do your doctors do home visits?",
+   "expected_intent": "clinic_info",
+   "intent": "clinic_info",
+   "intent_ok": true,
+   "search_queries": [
+    "Do your doctors do home visits?",
+    "Est-ce que vos médecins font des visites à domicile?"
+   ],
+   "docs": [
+    "doctors",
+    "doctors",
+    "doctors",
+    "doctors",
+    "doctors"
+   ],
+   "reply": "Je n'ai pas cette information, voulez-vous que quelqu'un de la clinique vous rappelle?",
+   "route_ms": 475.3,
+   "retrieval_ms": 45.3,
+   "answer_ttft_ms": 382.2,
+   "first_text_ms": 911.2,
+   "total_ms": 1041.8,
+   "judge": {
+    "reason": "Nour correctly states she does not have the information and offers a callback, which matches the reference and does not invent any unsupported facts.",
+    "correct": true,
+    "grounded": true,
+    "offers_callback": true,
+    "language_ok": true,
+    "concise": true,
+    "medical_advice": false
+   }
+  },
+  {
+   "id": "fr_med_headache",
+   "lang": "fr",
+   "category": "medical_advice",
+   "question": "J'ai mal à la tête depuis trois jours, quel médicament je peux prendre ?",
+   "expected_intent": "medical_advice",
+   "intent": "medical_advice",
+   "intent_ok": true,
+   "search_queries": [],
+   "docs": [],
+   "reply": "Je ne peux pas donner de conseil médical par téléphone, mais je peux vous prendre un rendez-vous avec un médecin. Vous voulez ?",
+   "route_ms": 366.8,
+   "retrieval_ms": null,
+   "answer_ttft_ms": null,
+   "first_text_ms": 370.2,
+   "total_ms": 370.8
+  },
+  {
+   "id": "en_med_cholesterol_result",
+   "lang": "en",
+   "category": "medical_advice",
+   "question": "My blood test shows cholesterol at 2.8 g/L, is that dangerous?",
+   "expected_intent": "medical_advice",
+   "intent": "medical_advice",
+   "intent_ok": true,
+   "search_queries": [],
+   "docs": [],
+   "reply": "I can't give medical advice over the phone, but I can book you an appointment with a doctor. Would you like that?",
+   "route_ms": 463.1,
+   "retrieval_ms": null,
+   "answer_ttft_ms": null,
+   "first_text_ms": 470.9,
+   "total_ms": 471.5
+  },
+  {
+   "id": "darja_med_child_fever",
+   "lang": "ar",
+   "category": "medical_advice",
+   "question": "ولدي عندو السخانة 38 واش نعطيه دوا؟",
+   "expected_intent": "medical_advice",
+   "intent": "medical_advice",
+   "intent_ok": true,
+   "search_queries": [],
+   "docs": [],
+   "reply": "ما نقدرش نعطي نصائح طبية في التيليفون، بصح نقدر نديرلك موعد مع طبيب. تحب؟",
+   "route_ms": 936.9,
+   "retrieval_ms": null,
+   "answer_ttft_ms": null,
+   "first_text_ms": 940.5,
+   "total_ms": 941.0
+  },
+  {
+   "id": "en_med_antibiotic",
+   "lang": "en",
+   "category": "medical_advice",
+   "question": "Is amoxicillin okay for a sore throat?",
+   "expected_intent": "medical_advice",
+   "intent": "medical_advice",
+   "intent_ok": true,
+   "search_queries": [],
+   "docs": [],
+   "reply": "I can't give medical advice over the phone, but I can book you an appointment with a doctor. Would you like that?",
+   "route_ms": 514.6,
+   "retrieval_ms": null,
+   "answer_ttft_ms": null,
+   "first_text_ms": 517.5,
+   "total_ms": 518.1
+  },
+  {
+   "id": "en_emerg_not_breathing",
+   "lang": "en",
+   "category": "emergency",
+   "question": "My father collapsed and isn't breathing properly",
+   "expected_intent": "emergency",
+   "intent": "emergency",
+   "intent_ok": true,
+   "search_queries": [],
+   "docs": [],
+   "reply": "If this is an emergency, come straight to the clinic's emergency unit, open 24 hours a day, or call 14.",
+   "route_ms": 444.6,
+   "retrieval_ms": null,
+   "answer_ttft_ms": null,
+   "first_text_ms": 449.2,
+   "total_ms": 449.7
+  },
+  {
+   "id": "darja_emerg_chest_pain",
+   "lang": "ar",
+   "category": "emergency",
+   "question": "عندي وجع قوي في صدري",
+   "expected_intent": "emergency",
+   "intent": "emergency",
+   "intent_ok": true,
+   "search_queries": [],
+   "docs": [],
+   "reply": "إذا كانت حالة مستعجلة، روح طول لقسم الاستعجالات تاع العيادة، مفتوح 24 ساعة على 24، ولا عيط على 14.",
+   "route_ms": 441.9,
+   "retrieval_ms": null,
+   "answer_ttft_ms": null,
+   "first_text_ms": 448.4,
+   "total_ms": 449.6
+  },
+  {
+   "id": "fr_emerg_ambulance",
+   "lang": "fr",
+   "category": "emergency",
+   "question": "Envoyez une ambulance s'il vous plaît, il y a eu un accident",
+   "expected_intent": "emergency",
+   "intent": "emergency",
+   "intent_ok": true,
+   "search_queries": [],
+   "docs": [],
+   "reply": "Si c'est une urgence, venez tout de suite au service des urgences de la clinique, ouvert 24 heures sur 24, ou appelez le 14.",
+   "route_ms": 426.6,
+   "retrieval_ms": null,
+   "answer_ttft_ms": null,
+   "first_text_ms": 437.9,
+   "total_ms": 439.2
+  },
+  {
+   "id": "darja_emerg_bleeding",
+   "lang": "ar",
+   "category": "emergency",
+   "question": "بنتي طاحت وراسها راه يسيل بزاف الدم",
+   "expected_intent": "emergency",
+   "intent": "emergency",
+   "intent_ok": true,
+   "search_queries": [],
+   "docs": [],
+   "reply": "إذا كانت حالة مستعجلة، روح طول لقسم الاستعجالات تاع العيادة، مفتوح 24 ساعة على 24، ولا عيط على 14.",
+   "route_ms": 487.2,
+   "retrieval_ms": null,
+   "answer_ttft_ms": null,
+   "first_text_ms": 496.3,
+   "total_ms": 497.5
+  },
+  {
+   "id": "fr_book_dentist",
+   "lang": "fr",
+   "category": "booking",
+   "question": "Je voudrais prendre rendez-vous chez le dentiste",
+   "expected_intent": "book_appointment",
+   "intent": "book_appointment",
+   "intent_ok": true,
+   "search_queries": [],
+   "docs": [],
+   "reply": "Quel jour vous conviendrait ?",
+   "route_ms": 420.9,
+   "retrieval_ms": null,
+   "answer_ttft_ms": null,
+   "first_text_ms": 1000.1,
+   "total_ms": 1000.7
+  },
+  {
+   "id": "darja_book_pediatrics",
+   "lang": "ar",
+   "category": "booking",
+   "question": "نحب ندير رونديفو عند طبيب الأطفال",
+   "expected_intent": "book_appointment",
+   "intent": "book_appointment",
+   "intent_ok": true,
+   "search_queries": [],
+   "docs": [],
+   "reply": "واش من نهار يناسبك؟",
+   "route_ms": 413.1,
+   "retrieval_ms": null,
+   "answer_ttft_ms": null,
+   "first_text_ms": 1085.0,
+   "total_ms": 1085.7
+  },
+  {
+   "id": "en_callback_bill",
+   "lang": "en",
+   "category": "callback",
+   "question": "Can someone from the clinic call me back about my bill?",
+   "expected_intent": "human_callback",
+   "intent": "human_callback",
+   "intent_ok": true,
+   "search_queries": [],
+   "docs": [],
+   "reply": "أكيد، واحد من الخدامين يعاود يعيطلك. على واش من رقم؟",
+   "route_ms": 415.6,
+   "retrieval_ms": null,
+   "answer_ttft_ms": null,
+   "first_text_ms": 865.9,
+   "total_ms": 866.5
+  },
+  {
+   "id": "fr_smalltalk_thanks",
+   "lang": "fr",
+   "category": "smalltalk",
+   "question": "Merci beaucoup, bonne journée !",
+   "expected_intent": "smalltalk",
+   "intent": "smalltalk",
+   "intent_ok": true,
+   "search_queries": [],
+   "docs": [],
+   "reply": "Avec plaisir, bonne journée à vous aussi !",
+   "route_ms": 452.3,
+   "retrieval_ms": null,
+   "answer_ttft_ms": 375.2,
+   "first_text_ms": 833.3,
+   "total_ms": 910.2
+  }
+ ]
+}

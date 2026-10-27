@@ -10,5 +10,7 @@ load_dotenv(ROOT / ".env.local")
 load_dotenv(ROOT / ".env")
 
 LLM_MODEL = os.getenv("LLM_MODEL", "openai/gpt-4.1-mini")
+# Routing is one short structured call before every reply; it can use a smaller model.
+ROUTER_MODEL = os.getenv("ROUTER_MODEL", LLM_MODEL)
 RAG_TOP_K = int(os.getenv("RAG_TOP_K", "5"))
 HISTORY_TURNS = 8  # messages of conversation history the LLM sees per call

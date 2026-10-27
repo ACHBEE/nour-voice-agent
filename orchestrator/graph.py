@@ -56,9 +56,11 @@ class Orchestrator:
         store: Store,
         *,
         today: Callable[[], date] = clinic_today,
+        router_llm: LLMClient | None = None,
         checkpointer: BaseCheckpointSaver | None = None,
     ):
         self.llm, self.rag, self.store, self.today = llm, rag, store, today
+        self.router_llm = router_llm
         self.checkpointer = checkpointer or InMemorySaver()
         self.graph = build_graph(self.checkpointer)
 
@@ -68,7 +70,14 @@ class Orchestrator:
 
     async def turn(self, call_id: str, text: str) -> AsyncIterator[str]:
         """Run one caller turn; yields Nour's reply as text chunks as soon as they exist."""
-        deps = Deps(self.llm, self.rag, self.store, call_id=call_id, today=self.today)
+        deps = Deps(
+            self.llm,
+            self.rag,
+            self.store,
+            call_id=call_id,
+            today=self.today,
+            router_llm=self.router_llm,
+        )
         turn_input: CallState = {
             "user_text": text,
             "messages": [{"role": "user", "content": text}],

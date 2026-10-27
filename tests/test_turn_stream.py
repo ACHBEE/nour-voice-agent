@@ -72,7 +72,9 @@ class SlowRouterLLM:
 
     async def structured(self, system, history, schema):
         await asyncio.sleep(0.3)
-        return RouteDecision(intent="clinic_info", language="fr", search_query="prix")
+        return RouteDecision(
+            intent="clinic_info", language="fr", search_fr="prix", search_en="", search_ar=""
+        )
 
     async def stream(self, system, history):
         for w in ("La", " consultation", " coûte", " 2000", " dinars."):

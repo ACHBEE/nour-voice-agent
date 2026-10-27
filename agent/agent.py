@@ -75,6 +75,8 @@ ORCH_METRIC_KEYS = ("route_ms", "retrieval_ms", "rag_server_ms", "answer_ttft_ms
 # Chosen by evals/stt/benchmark.py: the only model usable in Darja, French and English.
 STT_MODEL = os.getenv("STT_MODEL", "openai/gpt-live-transcribe:ar")
 LLM_MODEL = os.getenv("LLM_MODEL", "openai/gpt-4.1-mini")  # used by the orchestrator's nodes
+# Router stays on gpt-4.1-mini: nano cut ~350 ms but dropped intent accuracy 100% -> 89% (evals).
+ROUTER_MODEL = os.getenv("ROUTER_MODEL", LLM_MODEL)
 TTS_MODEL = os.getenv("TTS_MODEL", "cartesia/sonic-3")
 
 GREETING = "Bonjour, السلام عليكم، ici Nour de la Clinique El Amal, comment puis-je vous aider ?"
@@ -185,7 +187,8 @@ async def entrypoint(ctx: JobContext) -> None:
     store = await _open_store()
     rag = RagClient(RAG_GRPC_ADDR)
     orch_llm = LiveKitLLM(LLM_MODEL)
-    orchestrator = Orchestrator(orch_llm, rag, store)
+    router_llm = LiveKitLLM(ROUTER_MODEL) if ROUTER_MODEL != LLM_MODEL else None
+    orchestrator = Orchestrator(orch_llm, rag, store, router_llm=router_llm)
 
     session = AgentSession(
         stt=STT_MODEL,
@@ -223,6 +226,8 @@ async def entrypoint(ctx: JobContext) -> None:
         await orchestrator.end_call(call_id)
         await rag.close()
         await orch_llm.aclose()
+        if router_llm is not None:
+            await router_llm.aclose()
         if isinstance(store, BookingStore):
             await store.close()
 

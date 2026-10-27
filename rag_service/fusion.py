@@ -19,12 +19,19 @@ class Fused:
     ranks: dict[str, int] = field(default_factory=dict)  # list name -> 1-based rank
 
 
-def rrf(ranked: dict[str, list[int]], k: int = RRF_K) -> list[Fused]:
-    """Fuse named ranked lists of ids. Ties are broken by best single rank, then by id."""
+def rrf(
+    ranked: dict[str, list[int]], k: int = RRF_K, weights: dict[str, float] | None = None
+) -> list[Fused]:
+    """Fuse named ranked lists of ids. Ties are broken by best single rank, then by id.
+
+    `weights` scales each list's contribution (weighted RRF); missing lists weigh 1.
+    """
+    weights = weights or {}
     fused: dict[int, Fused] = {}
     for name, ids in ranked.items():
+        w = weights.get(name, 1.0)
         for rank, doc_id in enumerate(ids, start=1):
             f = fused.setdefault(doc_id, Fused(doc_id, 0.0))
-            f.score += 1.0 / (k + rank)
+            f.score += w / (k + rank)
             f.ranks[name] = rank
     return sorted(fused.values(), key=lambda f: (-f.score, min(f.ranks.values()), f.id))

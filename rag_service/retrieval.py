@@ -10,6 +10,7 @@ from typing import Literal, Protocol
 from psycopg_pool import AsyncConnectionPool
 from pydantic import BaseModel
 
+from rag_service.config import RRF_KEYWORD_WEIGHT
 from rag_service.fusion import rrf
 
 logger = logging.getLogger("rag.retrieval")
@@ -87,10 +88,17 @@ WHERE c.id = ANY(%(ids)s)
 
 
 class Retriever:
-    def __init__(self, pool: AsyncConnectionPool, embedder: Embedder, candidates: int = CANDIDATES):
+    def __init__(
+        self,
+        pool: AsyncConnectionPool,
+        embedder: Embedder,
+        candidates: int = CANDIDATES,
+        keyword_weight: float = RRF_KEYWORD_WEIGHT,
+    ):
         self.pool = pool
         self.embedder = embedder
         self.candidates = candidates
+        self.keyword_weight = keyword_weight
 
     async def search(self, query: str, top_k: int = 5, mode: Mode = "hybrid") -> SearchResult:
         t0 = time.perf_counter()
@@ -111,7 +119,8 @@ class Retriever:
 
             if mode == "hybrid":
                 fused = rrf(
-                    {"vector": [r[0] for r in vec_rows], "keyword": [r[0] for r in kw_rows]}
+                    {"vector": [r[0] for r in vec_rows], "keyword": [r[0] for r in kw_rows]},
+                    weights={"keyword": self.keyword_weight},
                 )
                 ranked = [(f.id, f.score) for f in fused[:top_k]]
             else:

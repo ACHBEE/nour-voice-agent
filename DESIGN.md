@@ -246,3 +246,49 @@ call start, the call still answers questions and forms apologise and offer a cal
 **One "orchestrator" row per turn in `latency_log.jsonl`** (intent, language, route, retrieval,
 server-side RAG time, answer TTFT, first text, total, filler, retrieved doc ids), next to
 LiveKit's per-message STT/LLM/TTS rows. Phase 5's latency report reads both.
+
+## Phase 5: Evals, and what they changed
+
+**Three eval layers, each answering one question.** (1) Retrieval without any LLM (hit@k, MRR
+per search mode): cheap and deterministic, so it runs in CI with a threshold. (2) The real
+graph end to end: intent accuracy, safety routing, per-stage latency. (3) LLM-as-judge on
+every LLM-written reply, graded against a reference with a rubric committed in the repo
+(`evals/judge_rubric.md`): correctness, grounding in the retrieved chunks, medical advice,
+language, length. Fixed-phrase replies (safety, forms) are checked by intent, not judged.
+
+**Judge = a stronger model than the one answering** (`gpt-4.1` judging `gpt-4.1-mini`), with
+the reason written before the verdicts. Known limits: one judge, one run, no human agreement
+study; 22 answerable cases means ±4.5 points per case. Good enough to rank changes whose
+effect is several cases, not to claim small differences.
+
+**Finding 1: hybrid search was worse than vector search alone on this corpus.** Raw-question
+MRR: hybrid 0.60, vector 0.70, keyword 0.50. Cause: 9 of 22 questions are cross-lingual, and
+full-text search only matches same-language chunks, so RRF rewards wrong same-language chunks
+for being in both lists. Sweeping RRF k (60 to 2) and the keyword weight (1 to 0.3) never
+beat vector-only (best MRR 0.67): tuning fusion can't fix lists that are wrong.
+
+**Fix: multi-query retrieval across the corpus languages.** The router, already one LLM call
+per turn, now also writes the question in French, English and Arabic. The raw words plus the
+three rewrites are searched in parallel (each hybrid) and fused with RRF. A chunk that ranks
+well in several languages wins, and full-text search becomes useful again because each
+variant matches documents in its own language. Result: retrieval hit@5 77% -> 100%, MRR
+0.54 -> 0.91, answer correctness 73% -> 95%. Cost: +200 ms in the router (more output
+tokens) and +50 ms retrieval (4 searches), measured. Alternatives not taken: a bigger
+embedding model (bge-m3, ~2 GB, slower on CPU) or translating documents at ingest (more
+chunks to maintain). Hybrid stays: on multi-query it is the stronger setting.
+
+**Finding 2: better context made the model fill gaps.** With more relevant-looking chunks,
+"is there wifi in the waiting room?" got "yes" and "home visits?" got "no", neither in any
+document ("don't know + callback" fell to 2/4). One prompt rule fixed it: never say yes or no
+about a service unless a document says so; not mentioned is not "no". Back to 4/4 with
+correctness unchanged. A regression the eval caught that manual testing would likely miss.
+
+**Finding 3: a smaller router model isn't worth it.** `gpt-4.1-nano` as router: first text
+p50 939 ms vs 1284 ms, but intent accuracy 100% -> 89% (test-preparation questions refused as
+medical advice), answer correctness 95% -> 73%, and an English question answered in French.
+Router stays on `gpt-4.1-mini` (`ROUTER_MODEL` env to change it). Latency levers left: start
+the raw-question search while the router runs, and stream the router's JSON.
+
+**Eval hygiene.** A test checks that every expected document id exists: one mislabelled id
+(`policies_payment` vs `policies`) had silently counted as retrieval misses. Evals retrieve
+in-process (same `Retriever` class as the gRPC server) and book into memory, never Postgres.

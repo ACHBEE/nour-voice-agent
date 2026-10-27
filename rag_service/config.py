@@ -13,6 +13,8 @@ load_dotenv(ROOT / ".env")
 
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://nour:nour_dev@localhost:5433/nour")
 EMBED_MODEL = os.getenv("EMBED_MODEL", "intfloat/multilingual-e5-small")
+# Weight of the full-text list in RRF (vector list = 1). Chosen by evals/run_evals.py.
+RRF_KEYWORD_WEIGHT = float(os.getenv("RRF_KEYWORD_WEIGHT", "1.0"))
 # Persistent model cache (fastembed defaults to the OS temp dir, which gets cleaned).
 EMBED_CACHE_DIR = os.getenv("EMBED_CACHE_DIR", str(ROOT / ".cache" / "fastembed"))
 RAG_GRPC_ADDR = os.getenv("RAG_GRPC_ADDR", "localhost:50051")  # where clients connect

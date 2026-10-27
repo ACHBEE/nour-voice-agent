@@ -83,7 +83,7 @@ class FakeStore:
 
 
 def route(intent, lang="fr", q=""):
-    return RouteDecision(intent=intent, language=lang, search_query=q)
+    return RouteDecision(intent=intent, language=lang, search_fr=q, search_en="", search_ar="")
 
 
 def extract(confirmation="none", **fields):
@@ -131,7 +131,8 @@ def test_clinic_info_retrieves_then_streams_a_grounded_answer():
     chunks = asyncio.run(_collect(orch.turn(CALL, "C'est combien la consultation ?")))
     assert len(chunks) > 1, "answer should stream in several chunks"
     assert "".join(chunks).strip() == "La consultation coûte 2000 dinars."
-    assert rag.queries == ["prix consultation généraliste"]
+    # raw words and the router rewrite are both searched
+    assert rag.queries == ["C'est combien la consultation ?", "prix consultation généraliste"]
     answer_system = llm.calls[-1][1]
     assert "Médecine générale : 2000 DZD." in answer_system  # chunk text reached the prompt
     s = state(orch)
@@ -192,6 +193,53 @@ def test_retrieval_failure_answers_without_documents():
     say(orch, "Vous ouvrez à quelle heure ?")
     assert "(none retrieved for this turn)" in llm.calls[-1][1]
     assert state(orch)["chunks"] == []
+
+
+class MultiLingualRag:
+    """Returns a different ranking per query; fails for one of them."""
+
+    def __init__(self):
+        self.queries = []
+
+    async def search(self, query, top_k=5, language=""):
+        self.queries.append(query)
+        if query == "boom":
+            raise ConnectionError("one variant failed")
+
+        def chunk(i, doc):
+            return RetrievedChunk(
+                chunk_id=i,
+                doc_id=doc,
+                title=doc,
+                section="",
+                content=f"{doc} text",
+                lang="fr",
+                source_path="x",
+                score=0.0,
+            )
+
+        lists = {
+            "raw": [chunk(1, "faq_darja"), chunk(2, "dentistry")],
+            "fr": [chunk(3, "noise_fr"), chunk(2, "dentistry")],
+            "en": [chunk(2, "dentistry"), chunk(4, "noise_en")],
+        }
+        return SearchResult(chunks=lists[query], embed_ms=10.0, search_ms=5.0)
+
+
+def test_multi_query_retrieval_fuses_language_variants():
+    rag = MultiLingualRag()
+    llm = FakeLLM(
+        RouteDecision(
+            intent="clinic_info", language="ar", search_fr="fr", search_en="en", search_ar="boom"
+        )
+    )
+    orch = make(llm, rag)
+    say(orch, "raw")
+    s = state(orch)
+    assert rag.queries == ["raw", "fr", "en", "boom"]
+    # found by all three working variants, so it beats each list's own #1
+    assert [c["doc_id"] for c in s["chunks"]][0] == "dentistry"
+    assert s["search_queries"] == ["raw", "fr", "en", "boom"]
 
 
 # ---------- booking ----------

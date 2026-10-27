@@ -37,7 +37,7 @@ class CallState(TypedDict, total=False):
     # set by the router, every turn
     intent: Intent
     language: Lang
-    search_query: str
+    search_queries: list[str]  # raw utterance + fr / en / ar rewrites, searched in parallel
     # set by the branch that handled the turn
     chunks: list[dict]
     reply: str
@@ -58,9 +58,11 @@ class CallState(TypedDict, total=False):
 class RouteDecision(BaseModel):
     intent: Intent
     language: Lang = Field(description="Language of the caller's latest message")
-    search_query: str = Field(
-        description="clinic_info only: standalone search question in the caller's language; else empty"
-    )
+    # One rewrite per corpus language: cross-lingual retrieval with a small multilingual
+    # embedding model is the main weakness the evals found (see DESIGN.md, Phase 5).
+    search_fr: str = Field(description="clinic_info only: standalone search question in French")
+    search_en: str = Field(description="clinic_info only: standalone search question in English")
+    search_ar: str = Field(description="clinic_info only: standalone search question in Arabic")
 
 
 class BookingExtraction(BaseModel):

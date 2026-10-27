@@ -64,8 +64,8 @@ Bookings → Postgres. Metrics → latency_log.jsonl. Evals → evals/, run in G
 - RAG server / client: `python -m rag_service.server`, `python -m rag_service.client "query"`
 - Orchestrator text chat (needs Postgres + RAG server): `python -m orchestrator.chat` (`-v` for node logs, or pass turns as args)
 - Tests: `pytest` (DB-backed tests skip if Postgres isn't up)
-- Evals: `python evals/run_evals.py`
-- Latency report: `python evals/latency_report.py`
+- Evals: `python evals/run_evals.py` (`--retrieval-only` needs no LLM; `--router-model`, `--keyword-weight`, `--tag`)
+- Latency report: `python evals/latency_report.py --since <ISO date>` (reads latency_log.jsonl)
 
 ## Progress
 - [x] Phase 0 — Setup, restructure, voice agent working (live Darja call verified)
@@ -73,6 +73,6 @@ Bookings → Postgres. Metrics → latency_log.jsonl. Evals → evals/, run in G
 - [x] Phase 2 — RAG service over gRPC
 - [x] Phase 3 — LangGraph orchestrator + bookings
 - [x] Phase 4 — Agent ↔ orchestrator integration (verified in LiveKit text mode; live voice check by Houcine pending)
-- [ ] Phase 5 — Evals + latency metrics
+- [x] Phase 5 — Evals + latency metrics (voice e2e latency on the current pipeline still needs a call)
 - [ ] Phase 6 — Docker, CI, README, DESIGN.md, demo script
 Update this checklist at the end of each phase.

@@ -10,6 +10,7 @@ or database errors keep the form and apologise.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import re
 import time as clock
@@ -43,8 +44,11 @@ from orchestrator.state import (
     RouteDecision,
 )
 from orchestrator.store import SlotTaken
+from rag_service.fusion import rrf
 
 logger = logging.getLogger("orchestrator")
+
+VARIANT_DEPTH = 10  # chunks fetched per query variant before fusing down to RAG_TOP_K
 
 _ARABIC = re.compile(r"[؀-ۿ]")
 _FRENCH = re.compile(r"[éèêàçù]|\b(je|vous|est|les|quel|quelle|combien|bonjour|rendez)\b", re.I)
@@ -86,24 +90,32 @@ async def route(state: CallState, runtime: Runtime[Deps]) -> dict[str, Any]:
     deps = runtime.context
     t0 = clock.perf_counter()
     try:
-        d = await deps.llm.structured(
+        d = await (deps.router_llm or deps.llm).structured(
             router_prompt(state, deps.today()), _history(state), RouteDecision
         )
     except Exception:  # noqa: BLE001 - any LLM failure: answer from documents instead
         logger.exception("router failed, falling back to clinic_info")
         text = state["user_text"]
-        d = RouteDecision(intent="clinic_info", language=guess_language(text), search_query=text)
+        d = RouteDecision(
+            intent="clinic_info",
+            language=guess_language(text),
+            search_fr="",
+            search_en="",
+            search_ar="",
+        )
     if d.intent != "emergency" and _URGENT_HELP.search(state["user_text"]):
         logger.warning("router said %s for an ambulance request: overriding to emergency", d.intent)
         d.intent = "emergency"
-    if d.intent == "clinic_info" and not d.search_query.strip():
-        d.search_query = state["user_text"]
+    queries: list[str] = []
+    if d.intent == "clinic_info":  # raw words first: Darja phrasing matches the Darja FAQ best
+        candidates = (state["user_text"], d.search_fr, d.search_en, d.search_ar)
+        queries = list(dict.fromkeys(q.strip() for q in candidates if q.strip()))
     route_ms = _ms(t0)
-    logger.info("route %s lang=%s %.0fms q=%r", d.intent, d.language, route_ms, d.search_query)
+    logger.info("route %s lang=%s %.0fms queries=%r", d.intent, d.language, route_ms, queries)
     return {  # reset per-turn fields so nothing leaks from the previous turn
         "intent": d.intent,
         "language": d.language,
-        "search_query": d.search_query,
+        "search_queries": queries,
         "chunks": [],
         "reply": "",
         "booking_id": None,
@@ -130,27 +142,41 @@ def next_step(state: CallState) -> str:
 
 
 async def retrieve(state: CallState, runtime: Runtime[Deps]) -> dict[str, Any]:
+    """Multi-query retrieval: search every query variant in parallel, fuse the lists with RRF.
+
+    A chunk that ranks well for the French, English and Arabic phrasings at once rises to the
+    top, which is what fixes questions asked in one language about a document in another.
+    """
     t0 = clock.perf_counter()
-    try:
-        res = await runtime.context.rag.search(
-            state["search_query"], top_k=RAG_TOP_K, language=_lang(state)
-        )
-    except Exception:  # noqa: BLE001 - answer without documents rather than drop the call
-        logger.exception("retrieval failed")
+    queries = state.get("search_queries") or [state["user_text"]]
+    rag = runtime.context.rag
+    results = await asyncio.gather(
+        *(rag.search(q, top_k=VARIANT_DEPTH, language=_lang(state)) for q in queries),
+        return_exceptions=True,
+    )
+    ok = [r for r in results if not isinstance(r, BaseException)]
+    for r in results:
+        if isinstance(r, BaseException):  # one failed variant shouldn't sink the others
+            logger.error("retrieval failed for one query variant: %r", r)
+    if not ok:  # answer without documents rather than drop the call
         return {"chunks": [], "retrieval_ms": _ms(t0)}
-    chunks = [c.model_dump(include={"doc_id", "section", "content", "score"}) for c in res.chunks]
+
+    by_id = {c.chunk_id: c for res in ok for c in res.chunks}
+    fused = rrf({f"q{i}": [c.chunk_id for c in res.chunks] for i, res in enumerate(ok)})
+    chunks = [
+        by_id[f.id].model_dump(include={"doc_id", "section", "content"}) | {"score": f.score}
+        for f in fused[:RAG_TOP_K]
+    ]
     retrieval_ms = _ms(t0)
+    server_ms = max(r.embed_ms + r.search_ms for r in ok)
     logger.info(
-        "retrieval %.0fms (server %.0fms) docs=%s",
+        "retrieval %d queries %.0fms (server max %.0fms) docs=%s",
+        len(queries),
         retrieval_ms,
-        res.embed_ms + res.search_ms,
+        server_ms,
         [c["doc_id"] for c in chunks],
     )
-    return {
-        "chunks": chunks,
-        "retrieval_ms": retrieval_ms,
-        "rag_server_ms": round(res.embed_ms + res.search_ms, 1),
-    }
+    return {"chunks": chunks, "retrieval_ms": retrieval_ms, "rag_server_ms": round(server_ms, 1)}
 
 
 async def answer(state: CallState, runtime: Runtime[Deps]) -> dict[str, Any]:

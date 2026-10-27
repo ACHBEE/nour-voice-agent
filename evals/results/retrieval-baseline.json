@@ -1,0 +1,168 @@
+{
+ "meta": {
+  "tag": "retrieval-baseline",
+  "ts": "2026-10-27 22:24 UTC",
+  "judge_model": "openai/gpt-4.1",
+  "retrieval_n": 22,
+  "llm_model": "-",
+  "router_model": "-"
+ },
+ "summary": {
+  "retrieval_raw_question": {
+   "hybrid": {
+    "hit@1": 0.5454545454545454,
+    "hit@3": 0.5454545454545454,
+    "hit@5": 0.7727272727272727,
+    "mrr": 0.5954545454545455
+   },
+   "vector": {
+    "hit@1": 0.6363636363636364,
+    "hit@3": 0.7272727272727273,
+    "hit@5": 0.8181818181818182,
+    "mrr": 0.7000000000000001
+   },
+   "keyword": {
+    "hit@1": 0.5,
+    "hit@3": 0.5,
+    "hit@5": 0.5,
+    "mrr": 0.5
+   }
+  }
+ },
+ "retrieval": {
+  "n": 22,
+  "modes": {
+   "hybrid": {
+    "hit@1": 0.5454545454545454,
+    "hit@3": 0.5454545454545454,
+    "hit@5": 0.7727272727272727,
+    "mrr": 0.5954545454545455
+   },
+   "vector": {
+    "hit@1": 0.6363636363636364,
+    "hit@3": 0.7272727272727273,
+    "hit@5": 0.8181818181818182,
+    "mrr": 0.7000000000000001
+   },
+   "keyword": {
+    "hit@1": 0.5,
+    "hit@3": 0.5,
+    "hit@5": 0.5,
+    "mrr": 0.5
+   }
+  },
+  "ranks": {
+   "fr_price_gp": {
+    "hybrid": 1,
+    "vector": 1,
+    "keyword": 1
+   },
+   "darja_price_cardio": {
+    "hybrid": 1,
+    "vector": 1,
+    "keyword": 1
+   },
+   "en_price_echo": {
+    "hybrid": 1,
+    "vector": 1,
+    "keyword": null
+   },
+   "darja_friday": {
+    "hybrid": 1,
+    "vector": 1,
+    "keyword": 1
+   },
+   "en_lab_hours": {
+    "hybrid": 1,
+    "vector": 1,
+    "keyword": 1
+   },
+   "fr_fasting_cholesterol": {
+    "hybrid": null,
+    "vector": 5,
+    "keyword": null
+   },
+   "en_chifa": {
+    "hybrid": 5,
+    "vector": 5,
+    "keyword": null
+   },
+   "en_pediatrician": {
+    "hybrid": 5,
+    "vector": 1,
+    "keyword": null
+   },
+   "darja_location": {
+    "hybrid": 1,
+    "vector": 1,
+    "keyword": 1
+   },
+   "fr_parking": {
+    "hybrid": 1,
+    "vector": 2,
+    "keyword": 1
+   },
+   "en_mri": {
+    "hybrid": null,
+    "vector": null,
+    "keyword": null
+   },
+   "fr_vaccination_days": {
+    "hybrid": 1,
+    "vector": 1,
+    "keyword": 1
+   },
+   "msa_dental_cleaning": {
+    "hybrid": 4,
+    "vector": 1,
+    "keyword": null
+   },
+   "fr_payment_cheques": {
+    "hybrid": 1,
+    "vector": 1,
+    "keyword": 1
+   },
+   "en_abdominal_ultrasound_prep": {
+    "hybrid": null,
+    "vector": null,
+    "keyword": null
+   },
+   "darja_emergency_night_price": {
+    "hybrid": null,
+    "vector": null,
+    "keyword": null
+   },
+   "fr_dentist_child_age": {
+    "hybrid": 4,
+    "vector": 2,
+    "keyword": null
+   },
+   "en_visiting_hours": {
+    "hybrid": 1,
+    "vector": 1,
+    "keyword": 1
+   },
+   "fr_ramadan_hours": {
+    "hybrid": 1,
+    "vector": 1,
+    "keyword": 1
+   },
+   "darja_results_by_phone": {
+    "hybrid": null,
+    "vector": null,
+    "keyword": null
+   },
+   "en_cardiologist_days": {
+    "hybrid": 5,
+    "vector": 1,
+    "keyword": null
+   },
+   "fr_what_to_bring": {
+    "hybrid": 1,
+    "vector": 1,
+    "keyword": 1
+   }
+  }
+ },
+ "records": []
+}

@@ -52,7 +52,7 @@ intent, for the caller's LATEST message:
 
 language: "ar" for Arabic or Darja (also when mixed with French words), "fr" for French, "en" for English. If mixed, pick the dominant one.
 
-search_query: for clinic_info only, the request as a short standalone question in the caller's language, with references to earlier turns resolved and obvious recognition errors fixed. Empty string for other intents."""
+search_fr, search_en, search_ar: for clinic_info only, the caller's request as a short standalone search question in French, in English and in Modern Standard Arabic (one each). Resolve references to earlier turns, fix obvious recognition errors, and keep clinic terms as they are (Chifa, CNAS, ECG, doctor names). The clinic documents are written in all three languages. Empty strings for other intents."""
 
 
 def answer_prompt(state: CallState) -> str:
@@ -69,6 +69,7 @@ def answer_prompt(state: CallState) -> str:
 Rules:
 - For any fact about the clinic (hours, prices, doctors, services, rules, addresses), use ONLY the clinic documents below. Never guess and never use outside knowledge.
 - If the documents don't contain the answer, say you don't have that information and offer to have a staff member call back.
+- Never say yes or no about a service, facility or practice (wifi, pharmacy, home visits, a treatment...) unless a document explicitly says so. Not being mentioned is not a "no": say you don't have that information.
 - Reply in {lang[state.get("language", "fr")]}, matching the caller's register.
 - Spoken style: one or two short sentences, no lists, no markdown, no emojis. Say amounts like "2000 dinars".
 - Never give medical advice, diagnoses or medication guidance; offer an appointment with a doctor instead. Emergencies: the emergency unit is open 24/7, or call 14.
