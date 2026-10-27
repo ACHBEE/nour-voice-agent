@@ -1,0 +1,20 @@
+[project]
+name = "nour-voice-agent"
+version = "0.1.0"
+description = "Multilingual real-time voice receptionist (LiveKit + LangGraph + pgvector RAG over gRPC)"
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["proto/*_pb2*.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "ASYNC", "BLE"]
+ignore = ["E501"]  # long lines are prompt prose; the formatter handles code
+
+[tool.ruff.lint.isort]
+known-first-party = ["agent", "orchestrator", "rag_service", "evals"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

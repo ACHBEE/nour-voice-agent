@@ -1,0 +1,9 @@
+# Voice agent (pinned to the version the code was checked against)
+livekit-agents[silero,turn-detector]==1.8.9
+livekit-plugins-noise-cancellation==0.3.2
+python-dotenv>=1.0
+pydantic>=2.7
+
+# Dev / CI
+pytest>=8
+ruff>=0.6
