@@ -58,7 +58,8 @@ Bookings → Postgres. Metrics → latency_log.jsonl. Evals → evals/, run in G
 - Run agent locally: `python agent/agent.py console` (needs Postgres + RAG server running)
 - Run agent with LiveKit Cloud: `python agent/agent.py dev`
 - Download agent models: `python -m livekit.agents download-files`
-- Start infra: `docker compose up -d` (Postgres + pgvector on localhost:5433)
+- Start infra only: `docker compose up -d postgres` (Postgres + pgvector on localhost:5433)
+- Whole stack in Docker: `docker compose up -d --build` (postgres -> ingest -> rag -> agent; agent needs .env.local)
 - Regenerate gRPC stubs: `python scripts/gen_proto.py`
 - Ingest docs into pgvector: `python -m rag_service.ingest` (`--force` after changing the embedding model)
 - RAG server / client: `python -m rag_service.server`, `python -m rag_service.client "query"`
@@ -74,5 +75,5 @@ Bookings → Postgres. Metrics → latency_log.jsonl. Evals → evals/, run in G
 - [x] Phase 3 — LangGraph orchestrator + bookings
 - [x] Phase 4 — Agent ↔ orchestrator integration (verified in LiveKit text mode; live voice check by Houcine pending)
 - [x] Phase 5 — Evals + latency metrics (voice e2e latency on the current pipeline still needs a call)
-- [ ] Phase 6 — Docker, CI, README, DESIGN.md, demo script
+- [x] Phase 6 — Docker, CI, README, DESIGN.md, demo script (CI runs once pushed to GitHub; demo video + voice latency numbers pending a recorded call)
 Update this checklist at the end of each phase.

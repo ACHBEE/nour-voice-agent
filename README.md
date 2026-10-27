@@ -1,53 +1,100 @@
-# Nour — Multilingual Real-Time Voice Receptionist (LiveKit)
+# Nour: multilingual real-time voice receptionist (LiveKit + LangGraph + RAG)
 
-A production-style voice AI agent that answers calls for a fictional Algerian clinic
-in **Arabic (incl. Darja), French and English**, answers questions from clinic documents,
-and books appointments with validated structured outputs.
+Nour answers the phone for **Clinique El Amal**, a fictional clinic in El Oued, Algeria. Callers
+speak **Algerian Darja, Modern Standard Arabic, French or English**, often mixed. Nour answers
+from the clinic's own documents, books appointments with validated structured data, logs
+callback requests, and never gives medical advice: emergencies get a fixed safety reply.
 
-> Status: voice agent wired to the LangGraph orchestrator (grounded RAG answers over gRPC, bookings and callbacks in Postgres, safety phrases, filler on slow turns). Evals done (results below); Docker + CI next.
+**Demo video:** _coming soon_ ([2-minute demo script](docs/demo_script.md))
 
-## Architecture (target)
+| What | How |
+|---|---|
+| Real-time voice | LiveKit Agents 1.8: VAD, multilingual turn detection, noise cancellation, streaming STT -> TTS, barge-in |
+| Orchestration | LangGraph state machine per caller turn, per-call memory in a checkpointer |
+| RAG | multilingual-e5 embeddings, Postgres + pgvector (HNSW) + full-text, multi-query RRF fusion |
+| Microservice | RAG service behind gRPC / Protobuf with health checks |
+| Structured outputs | strict JSON-schema LLM extraction, Pydantic v2 validation, DB constraints against double-booking |
+| Prompt engineering | grounded-answer rules, ASR-noise handling for Darja, router query rewriting |
+| Evaluation | 38-case multilingual eval set, retrieval hit@k / MRR, LLM-as-judge, refusal accuracy, STT WER benchmark |
+| MLOps | Docker image with baked models, docker compose stack, GitHub Actions CI with a retrieval quality gate |
 
+## Architecture
+
+```mermaid
+flowchart LR
+    caller([Caller: Darja, FR, EN]) -- WebRTC --> vad
+    subgraph agent["Voice agent: LiveKit Agents"]
+        vad["VAD, noise cancellation,<br/>multilingual turn detection"] --> stt["STT<br/>gpt-live-transcribe"]
+        stt --> llmnode["llm_node<br/>filler phrase if slow"]
+        llmnode --> tts["TTS<br/>Cartesia sonic-3"]
+    end
+    tts -- audio --> caller
+    llmnode <--> route
+    subgraph orch["LangGraph orchestrator, one run per caller turn"]
+        route{"router LLM<br/>intent, language,<br/>FR / EN / AR search queries"}
+        route -- clinic_info --> retrieve["multi-query retrieval"] --> answer["grounded answer, streamed"]
+        route -- book_appointment --> booking["booking form<br/>Pydantic + clinic schedule"]
+        route -- human_callback --> callback["callback form"]
+        route -- "emergency / medical_advice" --> safety["fixed safety phrase"]
+    end
+    retrieve -- "gRPC / Protobuf" --> rag["RAG service<br/>e5 embeddings, hybrid search, RRF"]
+    rag --> pg[("Postgres + pgvector<br/>HNSW + full-text")]
+    booking --> pg
+    callback --> pg
+    llmnode -. per-turn timings .-> log[("latency_log.jsonl")]
 ```
-Caller (web / phone)
-   │  WebRTC
-LiveKit Agent ── VAD + multilingual turn detection + noise cancellation
-   │  STT → LLM → TTS (streaming, interruptible)
-   ▼
-LangGraph orchestrator ──► gRPC ► RAG service (pgvector, hybrid search + RRF)
-                       ──► book_appointment (Pydantic-validated)
-                       ──► human callback / handoff
-Metrics: per-turn latency (EOU, TTFT, TTFB) → latency_log.jsonl
+
+**One caller turn:** LiveKit detects the end of the turn and transcribes it. The agent's
+`llm_node` hands the text to the LangGraph graph, whose router (one structured LLM call)
+picks the intent and language and rewrites the question in French, English and Arabic. Clinic
+questions search all variants in parallel over gRPC, fuse them with RRF, and stream an answer
+that may only use the retrieved chunks. Bookings and callbacks are collected over several turns,
+validated by code (not the LLM), read back, and saved to Postgres only after a "yes".
+Emergencies and medical questions get fixed phrases. Tradeoffs: [DESIGN.md](DESIGN.md).
+
+## Run with Docker
+
+```bash
+cp .env.example .env.local      # add LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET
+docker compose up -d --build    # Postgres -> ingest docs -> RAG gRPC service -> voice agent
+docker compose logs -f agent    # wait for the agent to register with LiveKit Cloud
 ```
 
-## Run locally
+Then talk to it from the [LiveKit Agents Playground](https://agents-playground.livekit.io)
+with your LiveKit project. The agent is named `nour` (explicit dispatch); set `AGENT_NAME=` in
+`.env.local` to have it join every new room automatically. Bookings land in Postgres
+(`localhost:5433`), per-turn latency in `logs/latency_log.jsonl`.
+
+## Run locally (Python 3.11+)
 
 ```bash
 python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 cp .env.example .env.local                            # add LiveKit keys
-docker compose up -d                                  # Postgres + pgvector, loads db/schema.sql
+docker compose up -d postgres                         # Postgres + pgvector, loads db/schema.sql
 python -m rag_service.ingest                          # chunk + embed clinic docs into pgvector
-python -m rag_service.server                          # RAG gRPC service on :50051
+python -m rag_service.server                          # RAG gRPC service on :50051 (keep running)
 python -m rag_service.client "Combien coûte une consultation ?"   # try a search
-python -m orchestrator.chat                           # text chat with the LangGraph orchestrator
+python -m orchestrator.chat                           # text chat with the orchestrator, no audio
 python -m livekit.agents download-files               # VAD + turn detector models
-python agent/agent.py console                         # talk in your terminal (RAG server must be running)
-python agent/agent.py dev                             # connect to LiveKit Cloud / Playground
+python agent/agent.py console                         # talk to Nour in your terminal
 pytest && ruff check .                                # tests + lint
+python evals/run_evals.py                             # full evals (LiveKit keys, ~3 min)
+python evals/latency_report.py                        # p50 / p95 per stage from your calls
 ```
 
 ## Repo layout
 
 ```
-agent/            LiveKit voice agent (STT -> LLM -> TTS, tools, latency logging)
-orchestrator/     LangGraph graph: intent routing -> RAG answer / booking / callback
+agent/            LiveKit voice agent: llm_node -> orchestrator, filler, latency logging
+orchestrator/     LangGraph graph: router -> RAG answer / booking / callback / safety
 rag_service/      gRPC RAG service: ingestion, embeddings, hybrid retrieval (pb/ = generated stubs)
-proto/            rag.proto (stubs: python scripts/gen_proto.py)
-data/clinic_docs/ fictional clinic documents (FR / AR / EN)
-db/               schema.sql (pgvector, HNSW, full-text)
-evals/            eval set, scoring + latency report scripts
-tests/            unit tests
+proto/            rag.proto (stubs: python scripts/gen_proto.py, checked in CI)
+data/clinic_docs/ 15 fictional clinic documents (FR / AR incl. Darja / EN)
+db/               schema.sql: pgvector HNSW, generated tsvector, bookings with slot constraint
+evals/            eval set, judge rubric, run_evals.py, latency_report.py, STT benchmark, results/
+docs/             demo script
+tests/            101 tests: unit, graph with a scripted LLM, live Postgres / retrieval
 ```
 
 ## Results

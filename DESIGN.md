@@ -292,3 +292,31 @@ the raw-question search while the router runs, and stream the router's JSON.
 **Eval hygiene.** A test checks that every expected document id exists: one mislabelled id
 (`policies_payment` vs `policies`) had silently counted as retrieval misses. Evals retrieve
 in-process (same `Retriever` class as the gRPC server) and book into memory, never Postgres.
+
+## Phase 6: Packaging and CI
+
+**One image, three commands** (ingest, RAG server, agent). They share most of the code and
+dependencies; three images would triple build time for no isolation benefit at this size.
+Splitting the agent image (LiveKit, ONNX turn detector) from the RAG image (fastembed) is the
+first step if they need to scale separately.
+
+**Models baked into the image, secrets never.** VAD, turn detector, noise cancellation and the
+e5 embedding model are downloaded at build time in their own layers (keyed on
+`requirements.txt` and the three embedding files), then `HF_HUB_OFFLINE=1`: containers start
+without reaching model hubs and the first call isn't slowed by a download. `.env.local` is in
+`.dockerignore` and reaches only the agent container, at runtime, via `env_file`.
+
+**Compose encodes the startup order:** Postgres healthy -> one-shot ingest exits 0 -> RAG
+service passes the standard gRPC health check -> agent starts. Ingest is idempotent (content
+hashes), so `docker compose up` on an existing volume re-embeds nothing.
+
+**CI gates on what is deterministic and free.** Lint, format (ruff pinned: format rules change
+between versions), generated gRPC stubs match the proto, 100+ tests against a real pgvector
+service container, and the retrieval eval with a floor (hybrid hit@5 >= 70% on raw questions,
+currently 77%). The LLM-judged evals need LiveKit keys and cost money per run, so they run on
+demand and their results are committed under `evals/results/`. A second job builds the image
+with the GitHub Actions layer cache.
+
+**Agent name from the environment.** `nour` by default: LiveKit uses explicit dispatch for named
+agents, which is what a phone integration wants. `AGENT_NAME=` (empty) makes it join every new
+room, which is what you want in the Agents Playground.

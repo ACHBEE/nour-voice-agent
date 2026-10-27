@@ -179,7 +179,9 @@ async def _open_store() -> BookingStore | UnavailableStore:
         return UnavailableStore()
 
 
-@server.rtc_session(agent_name="nour")
+# Named agent = explicit dispatch (production). AGENT_NAME="" joins every new room automatically,
+# handy with the LiveKit Agents Playground.
+@server.rtc_session(agent_name=os.getenv("AGENT_NAME", "nour"))
 async def entrypoint(ctx: JobContext) -> None:
     ctx.log_context_fields = {"room": ctx.room.name}
     call_id = ctx.room.name

@@ -9,3 +9,4 @@ latency_log.jsonl
 *.egg-info/
 evals/stt/recordings/
 .cache/
+logs/

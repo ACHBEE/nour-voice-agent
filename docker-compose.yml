@@ -1,7 +1,18 @@
-# Local infrastructure for Nour.
-#   docker compose up -d        start Postgres + pgvector (schema loads on first start)
-#   docker compose down -v      stop and wipe the database volume (re-runs schema.sql next start)
-# rag_service and agent containers are added in later phases.
+# The whole Nour stack.
+#   docker compose up -d --build      Postgres -> ingest docs -> RAG gRPC service -> voice agent
+#   docker compose up -d postgres     only the database (for running the Python code locally)
+#   docker compose logs -f agent      watch the agent register with LiveKit Cloud
+#   docker compose down -v            stop everything and wipe the database volume
+#
+# The agent needs LiveKit keys in .env.local (never baked into the image). Talk to it from the
+# LiveKit Agents Playground or any LiveKit client; see README "Run with Docker".
+
+x-app: &app
+  build: .
+  image: nour:latest
+  environment:
+    DATABASE_URL: postgresql://${POSTGRES_USER:-nour}:${POSTGRES_PASSWORD:-nour_dev}@postgres:5432/${POSTGRES_DB:-nour}
+    RAG_GRPC_ADDR: rag:50051
 
 services:
   postgres:
@@ -23,6 +34,46 @@ services:
       timeout: 3s
       retries: 10
       start_period: 120s # first boot runs initdb + schema.sql, slow on fresh WSL disks
+    restart: unless-stopped
+
+  # One-shot: chunk + embed the clinic docs into pgvector (skips unchanged docs), then exit.
+  ingest:
+    <<: *app
+    command: ["python", "-m", "rag_service.ingest"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  rag:
+    <<: *app
+    command: ["python", "-m", "rag_service.server"]
+    ports:
+      - "${RAG_PORT:-50051}:50051"
+    depends_on:
+      ingest:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "scripts/grpc_health_check.py", "localhost:50051"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  agent:
+    <<: *app
+    command: ["python", "agent/agent.py", "start"]
+    env_file: .env.local # LIVEKIT_URL / LIVEKIT_API_KEY / LIVEKIT_API_SECRET
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-nour}:${POSTGRES_PASSWORD:-nour_dev}@postgres:5432/${POSTGRES_DB:-nour}
+      RAG_GRPC_ADDR: rag:50051
+      LATENCY_LOG: /app/logs/latency_log.jsonl
+    volumes:
+      - ./logs:/app/logs # latency_log.jsonl for evals/latency_report.py --file logs/latency_log.jsonl
+    depends_on:
+      rag:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:
