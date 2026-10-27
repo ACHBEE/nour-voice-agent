@@ -40,6 +40,7 @@ def record_until_enter(device: int | str | None) -> tuple[np.ndarray, int]:
         callback=lambda data, *_: chunks.append(data.copy()),
     ):
         input("   recording... press Enter to stop ")
+        sd.sleep(400)  # keep a short tail so an early Enter doesn't cut the last word
     audio = np.concatenate(chunks)[:, 0] if chunks else np.zeros(0, dtype=np.float32)
     return audio, sr
 

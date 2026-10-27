@@ -89,3 +89,27 @@ for (alef/hamza forms, taa marbuta, diacritics, Latin accents).
 
 **Limits.** One speaker, 11 phrases: enough to rank providers for this demo, not a general claim.
 Recordings stay out of git (it's a person's voice).
+
+**Result (2026-10-27, 8 phrases, one speaker, laptop mic).** Full table:
+[evals/stt/results.md](evals/stt/results.md).
+
+| Model | WER Darja | WER French | WER English | WER all | p50 latency |
+|---|---|---|---|---|---|
+| openai/gpt-live-transcribe:ar | 0.88 | **0.17** | 0.71 | **0.78** | 1.50 s |
+| speechmatics/linden-1:ar | **0.67** | 1.00 | 1.00 | **0.78** | 0.85 s |
+| deepgram/nova-3:multi (old default) | 1.00 | 0.33 | 0.71 | 0.87 | 0.57 s |
+
+**Decision: `openai/gpt-live-transcribe:ar`.** The top two tie on average WER, so the call is
+made on *coverage*: a receptionist line can't fail a whole language. Speechmatics is best on
+pure Darja but scores 1.00 on French; Deepgram `multi` returned Turkish/Persian for Darja;
+Deepgram `ar-DZ` fails French and English entirely. gpt-live-transcribe is the only model that is
+usable in all three, with the best CER (0.57) and zero failed requests.
+**Cost:** ~0.9 s more end-of-speech-to-transcript latency than Deepgram. Phase 5 measures the
+real per-turn effect; if it's too slow, preemptive generation and a filler phrase are the levers.
+
+**Honest caveats.** (1) 8 phrases, one speaker: the differences between the top models are within
+noise; the language-failure pattern is the robust signal. (2) The laptop mic delivers almost no
+energy above 4 kHz (telephone-band audio), which hurts every model on Arabic fricatives, but is
+also what real phone calls sound like. (3) Absolute Darja WER is high for every provider:
+Darja ASR is an unsolved problem off the shelf, which is why the prompt is designed to tolerate
+bad transcripts and ask for clarification.

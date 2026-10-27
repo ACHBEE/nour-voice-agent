@@ -59,7 +59,8 @@ TURN_METRIC_KEYS = (
 # Models are configurable so you can swap providers without touching code.
 # Defaults use LiveKit Inference (only your LiveKit keys needed).
 # Check the exact model IDs available in your LiveKit Cloud dashboard.
-STT_MODEL = os.getenv("STT_MODEL", "deepgram/nova-3:multi")
+# Chosen by evals/stt/benchmark.py: the only model usable in Darja, French and English.
+STT_MODEL = os.getenv("STT_MODEL", "openai/gpt-live-transcribe:ar")
 LLM_MODEL = os.getenv("LLM_MODEL", "openai/gpt-4.1-mini")
 TTS_MODEL = os.getenv("TTS_MODEL", "cartesia/sonic-3")
 

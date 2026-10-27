@@ -25,6 +25,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 import aiohttp
+import numpy as np
 from dotenv import load_dotenv
 from livekit import rtc
 from livekit.agents import inference, stt
@@ -89,18 +90,32 @@ def frames(pcm: bytes) -> list[rtc.AudioFrame]:
     return out
 
 
+def last_voiced_frame(pcm: bytes) -> int:
+    """Index of the last 20 ms frame containing speech (energy above 10% of the loudest frame),
+    so latency is measured from the end of speech, not from the end of the file's silence."""
+    a = np.frombuffer(pcm, dtype=np.int16).astype(np.float32)
+    n = len(a) // FRAME
+    if n == 0:
+        return 0
+    rms = np.sqrt((a[: n * FRAME].reshape(n, FRAME) ** 2).mean(axis=1))
+    voiced = np.nonzero(rms > max(rms.max() * 0.1, 1.0))[0]
+    return int(voiced[-1]) if len(voiced) else n - 1
+
+
 async def transcribe(engine: stt.STT, pcm: bytes) -> tuple[str, float | None]:
     stream = engine.stream()
     speech_end = 0.0
     last_final: float | None = None
     texts: list[str] = []
+    end_frame = last_voiced_frame(pcm)
 
     async def push() -> None:
         nonlocal speech_end
-        for f in frames(pcm):
+        for i, f in enumerate(frames(pcm)):
             stream.push_frame(f)
             await asyncio.sleep(0.02)
-        speech_end = time.perf_counter()
+            if i == end_frame:
+                speech_end = time.perf_counter()
         for f in frames(b"\x00" * int(SR * TRAILING_SILENCE_S) * 2):
             stream.push_frame(f)
             await asyncio.sleep(0.02)

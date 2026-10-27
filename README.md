@@ -48,11 +48,24 @@ tests/            unit tests
 
 ## Results
 
+### Speech-to-text for Darja / French / English (measured)
+
+8 recorded phrases, one speaker, laptop mic; lower is better. Full table and method:
+[evals/stt/results.md](evals/stt/results.md), [DESIGN.md](DESIGN.md#stt-for-darja-measure-dont-guess).
+
+| STT model (LiveKit Inference) | WER Darja | WER French | WER all | p50 latency |
+|---|---|---|---|---|
+| **openai/gpt-live-transcribe:ar** (chosen) | 0.88 | 0.17 | 0.78 | 1.50 s |
+| speechmatics/linden-1:ar | 0.67 | 1.00 | 0.78 | 0.85 s |
+| deepgram/nova-3:multi (previous default) | 1.00 | 0.33 | 0.87 | 0.57 s |
+
+### Voice pipeline and RAG
+
 | Metric | Value |
 |---|---|
-| p50 latency to first audio | _tbd_ |
-| p95 latency to first audio | _tbd_ |
-| RAG answer accuracy (eval set) | _tbd_ |
+| p50 / p95 end-to-end turn latency | not measured yet (Phase 5) |
+| Retrieval hit rate@k | not measured yet (Phase 5) |
+| Answer correctness (LLM-as-judge) | not measured yet (Phase 5) |
 
 ## Design decisions
 See [DESIGN.md](DESIGN.md).

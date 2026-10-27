@@ -1,0 +1,597 @@
+[
+  {
+    "label": "deepgram/nova-3:multi",
+    "rows": [
+      {
+        "id": "darja_01_friday",
+        "lang": "darja",
+        "text": "واش تخدمو نهار الجمعة؟",
+        "hyp": "Hoşça kalın hocam.",
+        "wer": 1.0,
+        "cer": 1.0,
+        "latency": 0.6862293000003774,
+        "error": null
+      },
+      {
+        "id": "darja_02_price",
+        "lang": "darja",
+        "text": "قداش الكونسيلتاسيون عند الطبيب العام؟",
+        "hyp": "پونسنتاتیان طبیب دائم",
+        "wer": 1.0,
+        "cer": 0.6875,
+        "latency": 0.429346799999621,
+        "error": null
+      },
+      {
+        "id": "darja_05_location",
+        "lang": "darja",
+        "text": "وين راهي العيادة بالضبط؟",
+        "hyp": "İyi adalet oldu.",
+        "wer": 1.0,
+        "cer": 1.0,
+        "latency": 0.52150999999958,
+        "error": null
+      },
+      {
+        "id": "darja_06_emergency",
+        "lang": "darja",
+        "text": "عندي وجع في صدري واش ندير؟",
+        "hyp": "Feyzaları görüşündür.",
+        "wer": 1.0,
+        "cer": 1.0,
+        "latency": 0.5084065000000919,
+        "error": null
+      },
+      {
+        "id": "mixed_01_reschedule",
+        "lang": "darja+fr",
+        "text": "نحب نبدل le rendez-vous تاعي لنهار الأحد",
+        "hyp": "الدوران دیبوتی آنها الاحد",
+        "wer": 0.875,
+        "cer": 0.696969696969697,
+        "latency": 0.5029902000005677,
+        "error": null
+      },
+      {
+        "id": "mixed_02_echo",
+        "lang": "darja+fr",
+        "text": "بقداش l'échographie؟",
+        "hyp": "Just because coffee.",
+        "wer": 1.0,
+        "cer": 0.8823529411764706,
+        "latency": 0.6111842000000252,
+        "error": null
+      },
+      {
+        "id": "fr_01_cardio",
+        "lang": "fr",
+        "text": "Bonjour, je voudrais prendre un rendez-vous chez le cardiologue mardi matin.",
+        "hyp": "Bonjour. Je voudrais prendre un rendez-vous céleocardiure Mardi, bonjour.",
+        "wer": 0.3333333333333333,
+        "cer": 0.23809523809523808,
+        "latency": 1.0051414999998087,
+        "error": null
+      },
+      {
+        "id": "en_01_lab",
+        "lang": "en",
+        "text": "Hi, what time does the laboratory open?",
+        "hyp": "What then does the law of the",
+        "wer": 0.7142857142857143,
+        "cer": 0.45161290322580644,
+        "latency": 0.6483020000005126,
+        "error": null
+      }
+    ]
+  },
+  {
+    "label": "deepgram/nova-3:ar-DZ",
+    "rows": [
+      {
+        "id": "darja_01_friday",
+        "lang": "darja",
+        "text": "واش تخدمو نهار الجمعة؟",
+        "hyp": "وأجدحت موجرة",
+        "wer": 1.0,
+        "cer": 0.6666666666666666,
+        "latency": 0.692195399999946,
+        "error": null
+      },
+      {
+        "id": "darja_02_price",
+        "lang": "darja",
+        "text": "قداش الكونسيلتاسيون عند الطبيب العام؟",
+        "hyp": "أعوزيت عصيان الطبيب العام.",
+        "wer": 0.6,
+        "cer": 0.46875,
+        "latency": 0.5063854999998512,
+        "error": null
+      },
+      {
+        "id": "darja_05_location",
+        "lang": "darja",
+        "text": "وين راهي العيادة بالضبط؟",
+        "hyp": "عيادة بالضبط.",
+        "wer": 0.75,
+        "cer": 0.45,
+        "latency": 1.093825900000411,
+        "error": null
+      },
+      {
+        "id": "darja_06_emergency",
+        "lang": "darja",
+        "text": "عندي وجع في صدري واش ندير؟",
+        "hyp": "في صدر وجده",
+        "wer": 0.8333333333333334,
+        "cer": 0.65,
+        "latency": 0.49394159999974363,
+        "error": null
+      },
+      {
+        "id": "mixed_01_reschedule",
+        "lang": "darja+fr",
+        "text": "نحب نبدل le rendez-vous تاعي لنهار الأحد",
+        "hyp": "لدروندي بوعاء هو الأحد.",
+        "wer": 0.875,
+        "cer": 0.7575757575757576,
+        "latency": 0.5029082999999446,
+        "error": null
+      },
+      {
+        "id": "mixed_02_echo",
+        "lang": "darja+fr",
+        "text": "بقداش l'échographie؟",
+        "hyp": "تشتكي تشتكي.",
+        "wer": 1.0,
+        "cer": 0.9411764705882353,
+        "latency": 0.6112129000002824,
+        "error": null
+      },
+      {
+        "id": "fr_01_cardio",
+        "lang": "fr",
+        "text": "Bonjour, je voudrais prendre un rendez-vous chez le cardiologue mardi matin.",
+        "hyp": "وجوه",
+        "wer": 1.0,
+        "cer": 1.0,
+        "latency": -10.035754499999712,
+        "error": null
+      },
+      {
+        "id": "en_01_lab",
+        "lang": "en",
+        "text": "Hi, what time does the laboratory open?",
+        "hyp": "وتاندلز للعبة الأورد",
+        "wer": 1.0,
+        "cer": 1.0,
+        "latency": 0.6230493000002753,
+        "error": null
+      }
+    ]
+  },
+  {
+    "label": "deepgram/nova-3:ar-DZ +keyterms",
+    "rows": [
+      {
+        "id": "darja_01_friday",
+        "lang": "darja",
+        "text": "واش تخدمو نهار الجمعة؟",
+        "hyp": "وأجدحت موجرة",
+        "wer": 1.0,
+        "cer": 0.6666666666666666,
+        "latency": 0.8764997999996922,
+        "error": null
+      },
+      {
+        "id": "darja_02_price",
+        "lang": "darja",
+        "text": "قداش الكونسيلتاسيون عند الطبيب العام؟",
+        "hyp": "أعوزيت عصيان الطبيب الأمل.",
+        "wer": 0.8,
+        "cer": 0.53125,
+        "latency": 0.39707799999996496,
+        "error": null
+      },
+      {
+        "id": "darja_05_location",
+        "lang": "darja",
+        "text": "وين راهي العيادة بالضبط؟",
+        "hyp": "عيادة بالضبط،",
+        "wer": 0.75,
+        "cer": 0.45,
+        "latency": 0.5225932000003013,
+        "error": null
+      },
+      {
+        "id": "darja_06_emergency",
+        "lang": "darja",
+        "text": "عندي وجع في صدري واش ندير؟",
+        "hyp": "في صدى وجده",
+        "wer": 0.8333333333333334,
+        "cer": 0.65,
+        "latency": 0.48756869999942865,
+        "error": null
+      },
+      {
+        "id": "mixed_01_reschedule",
+        "lang": "darja+fr",
+        "text": "نحب نبدل le rendez-vous تاعي لنهار الأحد",
+        "hyp": "رونديفو داعٍ هو الأحد.",
+        "wer": 0.875,
+        "cer": 0.696969696969697,
+        "latency": 0.5922218000005159,
+        "error": null
+      },
+      {
+        "id": "mixed_02_echo",
+        "lang": "darja+fr",
+        "text": "بقداش l'échographie؟",
+        "hyp": "تشتكي تشتكي.",
+        "wer": 1.0,
+        "cer": 0.9411764705882353,
+        "latency": 0.733020800000304,
+        "error": null
+      },
+      {
+        "id": "fr_01_cardio",
+        "lang": "fr",
+        "text": "Bonjour, je voudrais prendre un rendez-vous chez le cardiologue mardi matin.",
+        "hyp": "وجوه Jovodie Gand Gand Gand Gand Gand Gand نديفو. نديفو. نديفو.",
+        "wer": 1.0,
+        "cer": 0.8253968253968254,
+        "latency": 3.2963337999999567,
+        "error": null
+      },
+      {
+        "id": "en_01_lab",
+        "lang": "en",
+        "text": "Hi, what time does the laboratory open?",
+        "hyp": "وتاندلز للعبة الأمل",
+        "wer": 1.0,
+        "cer": 1.0,
+        "latency": 0.8779431999992084,
+        "error": null
+      }
+    ]
+  },
+  {
+    "label": "openai/gpt-live-transcribe:ar",
+    "rows": [
+      {
+        "id": "darja_01_friday",
+        "lang": "darja",
+        "text": "واش تخدمو نهار الجمعة؟",
+        "hyp": "وأجد موجودة",
+        "wer": 1.0,
+        "cer": 0.6111111111111112,
+        "latency": 1.4127714000005653,
+        "error": null
+      },
+      {
+        "id": "darja_02_price",
+        "lang": "darja",
+        "text": "قداش الكونسيلتاسيون عند الطبيب العام؟",
+        "hyp": "Okay توصي عن طبيب عام",
+        "wer": 1.0,
+        "cer": 0.65625,
+        "latency": 1.4609966999996686,
+        "error": null
+      },
+      {
+        "id": "darja_05_location",
+        "lang": "darja",
+        "text": "وين راهي العيادة بالضبط؟",
+        "hyp": "زيادة بالضغط",
+        "wer": 1.0,
+        "cer": 0.55,
+        "latency": 1.529562600000645,
+        "error": null
+      },
+      {
+        "id": "darja_06_emergency",
+        "lang": "darja",
+        "text": "عندي وجع في صدري واش ندير؟",
+        "hyp": "في صدري وش ندير؟",
+        "wer": 0.5,
+        "cer": 0.4,
+        "latency": 1.641628700000183,
+        "error": null
+      },
+      {
+        "id": "mixed_01_reschedule",
+        "lang": "darja+fr",
+        "text": "نحب نبدل le rendez-vous تاعي لنهار الأحد",
+        "hyp": "أريد رونديبوتان هذا الأحد.",
+        "wer": 0.875,
+        "cer": 0.696969696969697,
+        "latency": 1.5591605999998137,
+        "error": null
+      },
+      {
+        "id": "mixed_02_echo",
+        "lang": "darja+fr",
+        "text": "بقداش l'échographie؟",
+        "hyp": "شكرا",
+        "wer": 1.0,
+        "cer": 0.9411764705882353,
+        "latency": 1.3360554000000775,
+        "error": null
+      },
+      {
+        "id": "fr_01_cardio",
+        "lang": "fr",
+        "text": "Bonjour, je voudrais prendre un rendez-vous chez le cardiologue mardi matin.",
+        "hyp": "Bonjour. Je voudrais prendre un rendez-vous chez le cardiologue. เอาดี",
+        "wer": 0.16666666666666666,
+        "cer": 0.15873015873015872,
+        "latency": 1.5460090000005948,
+        "error": null
+      },
+      {
+        "id": "en_01_lab",
+        "lang": "en",
+        "text": "Hi, what time does the laboratory open?",
+        "hyp": "What عنداد laboratory",
+        "wer": 0.7142857142857143,
+        "cer": 0.5483870967741935,
+        "latency": 1.191874999999527,
+        "error": null
+      }
+    ]
+  },
+  {
+    "label": "google/gemini-3.5-transcribe-live:ar",
+    "rows": [
+      {
+        "id": "darja_01_friday",
+        "lang": "darja",
+        "text": "واش تخدمو نهار الجمعة؟",
+        "hyp": "افتح المتجر.",
+        "wer": 1.0,
+        "cer": 0.7777777777777778,
+        "latency": 1.727509000000282,
+        "error": null
+      },
+      {
+        "id": "darja_02_price",
+        "lang": "darja",
+        "text": "قداش الكونسيلتاسيون عند الطبيب العام؟",
+        "hyp": "عزيزتي، هل أنت طبيب الآن؟",
+        "wer": 1.0,
+        "cer": 0.65625,
+        "latency": 2.12077169999975,
+        "error": null
+      },
+      {
+        "id": "darja_05_location",
+        "lang": "darja",
+        "text": "وين راهي العيادة بالضبط؟",
+        "hyp": "هي دي بالضبط.",
+        "wer": 0.75,
+        "cer": 0.55,
+        "latency": 2.133149599999342,
+        "error": null
+      },
+      {
+        "id": "darja_06_emergency",
+        "lang": "darja",
+        "text": "عندي وجع في صدري واش ندير؟",
+        "hyp": "في في صدري",
+        "wer": 0.6666666666666666,
+        "cer": 0.65,
+        "latency": 2.1604879000005894,
+        "error": null
+      },
+      {
+        "id": "mixed_01_reschedule",
+        "lang": "darja+fr",
+        "text": "نحب نبدل le rendez-vous تاعي لنهار الأحد",
+        "hyp": "بدي الـ بتاعي نهار الأحد.",
+        "wer": 0.875,
+        "cer": 0.5454545454545454,
+        "latency": 2.1627487000005203,
+        "error": null
+      },
+      {
+        "id": "mixed_02_echo",
+        "lang": "darja+fr",
+        "text": "بقداش l'échographie؟",
+        "hyp": "درس جيوغرافي",
+        "wer": 1.0,
+        "cer": 0.9411764705882353,
+        "latency": 2.121296899999834,
+        "error": null
+      },
+      {
+        "id": "fr_01_cardio",
+        "lang": "fr",
+        "text": "Bonjour, je voudrais prendre un rendez-vous chez le cardiologue mardi matin.",
+        "hyp": "Bonjour, je voudrais prendre un rendez-vous chez le cardiologue. ماضي ماضي",
+        "wer": 0.16666666666666666,
+        "cer": 0.15873015873015872,
+        "latency": 2.1077330999996775,
+        "error": null
+      },
+      {
+        "id": "en_01_lab",
+        "lang": "en",
+        "text": "Hi, what time does the laboratory open?",
+        "hyp": "موتور اندكتور",
+        "wer": 1.0,
+        "cer": 1.0,
+        "latency": 2.349864499999967,
+        "error": null
+      }
+    ]
+  },
+  {
+    "label": "speechmatics/linden-1:ar",
+    "rows": [
+      {
+        "id": "darja_01_friday",
+        "lang": "darja",
+        "text": "واش تخدمو نهار الجمعة؟",
+        "hyp": "واجتاحت موجة.",
+        "wer": 1.0,
+        "cer": 0.6666666666666666,
+        "latency": 1.7672701999999845,
+        "error": null
+      },
+      {
+        "id": "darja_02_price",
+        "lang": "darja",
+        "text": "قداش الكونسيلتاسيون عند الطبيب العام؟",
+        "hyp": "عن الطبيب العام.",
+        "wer": 0.6,
+        "cer": 0.59375,
+        "latency": 0.7954208000001017,
+        "error": null
+      },
+      {
+        "id": "darja_05_location",
+        "lang": "darja",
+        "text": "وين راهي العيادة بالضبط؟",
+        "hyp": "رياضة بالضبط.",
+        "wer": 0.75,
+        "cer": 0.5,
+        "latency": 0.8501313999995546,
+        "error": null
+      },
+      {
+        "id": "darja_06_emergency",
+        "lang": "darja",
+        "text": "عندي وجع في صدري واش ندير؟",
+        "hyp": "في صدري واش ندير.",
+        "wer": 0.3333333333333333,
+        "cer": 0.35,
+        "latency": 1.0789376000002449,
+        "error": null
+      },
+      {
+        "id": "mixed_01_reschedule",
+        "lang": "darja+fr",
+        "text": "نحب نبدل le rendez-vous تاعي لنهار الأحد",
+        "hyp": "بدل رونديفو تاعي نهار الأحد.",
+        "wer": 0.75,
+        "cer": 0.5151515151515151,
+        "latency": 0.8658247999992454,
+        "error": null
+      },
+      {
+        "id": "mixed_02_echo",
+        "lang": "darja+fr",
+        "text": "بقداش l'échographie؟",
+        "hyp": "",
+        "wer": null,
+        "cer": null,
+        "latency": null,
+        "error": "TimeoutError: "
+      },
+      {
+        "id": "fr_01_cardio",
+        "lang": "fr",
+        "text": "Bonjour, je voudrais prendre un rendez-vous chez le cardiologue mardi matin.",
+        "hyp": "وجود. فودري. سلوكا.",
+        "wer": 1.0,
+        "cer": 1.0,
+        "latency": -3.2136364000007234,
+        "error": null
+      },
+      {
+        "id": "en_01_lab",
+        "lang": "en",
+        "text": "Hi, what time does the laboratory open?",
+        "hyp": "تنظر للعبه.",
+        "wer": 1.0,
+        "cer": 1.0,
+        "latency": 0.8000740999996196,
+        "error": null
+      }
+    ]
+  },
+  {
+    "label": "assemblyai/universal-3-6-pro:ar",
+    "rows": [
+      {
+        "id": "darja_01_friday",
+        "lang": "darja",
+        "text": "واش تخدمو نهار الجمعة؟",
+        "hyp": "واشتخدموا الجماعة",
+        "wer": 1.0,
+        "cer": 0.2222222222222222,
+        "latency": 0.8275297000000137,
+        "error": null
+      },
+      {
+        "id": "darja_02_price",
+        "lang": "darja",
+        "text": "قداش الكونسيلتاسيون عند الطبيب العام؟",
+        "hyp": "وسيتعصي عن طبيب عام",
+        "wer": 1.0,
+        "cer": 0.5625,
+        "latency": 1.0017415000002075,
+        "error": null
+      },
+      {
+        "id": "darja_05_location",
+        "lang": "darja",
+        "text": "وين راهي العيادة بالضبط؟",
+        "hyp": "يا دا بالضبط.",
+        "wer": 0.75,
+        "cer": 0.55,
+        "latency": 0.8903171000001748,
+        "error": null
+      },
+      {
+        "id": "darja_06_emergency",
+        "lang": "darja",
+        "text": "عندي وجع في صدري واش ندير؟",
+        "hyp": "في صدره وجن دير",
+        "wer": 0.8333333333333334,
+        "cer": 0.5,
+        "latency": 1.0276882999996815,
+        "error": null
+      },
+      {
+        "id": "mixed_01_reschedule",
+        "lang": "darja+fr",
+        "text": "نحب نبدل le rendez-vous تاعي لنهار الأحد",
+        "hyp": "الدوران دي بودي عينها الأحد",
+        "wer": 0.875,
+        "cer": 0.6666666666666666,
+        "latency": 0.9927924000003259,
+        "error": null
+      },
+      {
+        "id": "mixed_02_echo",
+        "lang": "darja+fr",
+        "text": "بقداش l'échographie؟",
+        "hyp": "تشديق قلبي",
+        "wer": 1.0,
+        "cer": 0.9411764705882353,
+        "latency": 1.78416819999984,
+        "error": null
+      },
+      {
+        "id": "fr_01_cardio",
+        "lang": "fr",
+        "text": "Bonjour, je voudrais prendre un rendez-vous chez le cardiologue mardi matin.",
+        "hyp": "Bonjour. Je voudrais prendre un rendez-vous سيليو كارديو. مardi matin.",
+        "wer": 0.3333333333333333,
+        "cer": 0.2857142857142857,
+        "latency": 1.2737864999999147,
+        "error": null
+      },
+      {
+        "id": "en_01_lab",
+        "lang": "en",
+        "text": "Hi, what time does the laboratory open?",
+        "hyp": "وكانت ذات لابطة عظيمة",
+        "wer": 1.0,
+        "cer": 1.0,
+        "latency": 0.7296689000004335,
+        "error": null
+      }
+    ]
+  }
+]
