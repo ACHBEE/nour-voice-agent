@@ -4,7 +4,7 @@ A production-style voice AI agent that answers calls for a fictional Algerian cl
 in **Arabic (incl. Darja), French and English**, answers questions from clinic documents,
 and books appointments with validated structured outputs.
 
-> Status: Day 1 — voice pipeline, tools, latency metrics. RAG + LangGraph + gRPC in progress.
+> Status: voice pipeline, clinic knowledge base (15 docs, FR/AR/EN) and pgvector schema done. RAG over gRPC + LangGraph in progress.
 
 ## Architecture (target)
 
@@ -26,6 +26,7 @@ Metrics: per-turn latency (EOU, TTFT, TTFB) → latency_log.jsonl
 python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 cp .env.example .env.local                            # add LiveKit keys
+docker compose up -d                                  # Postgres + pgvector, loads db/schema.sql
 python -m livekit.agents download-files               # VAD + turn detector models
 python agent/agent.py console                         # talk in your terminal
 python agent/agent.py dev                             # connect to LiveKit Cloud / Playground

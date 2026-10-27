@@ -27,3 +27,42 @@ not by assumption.
 
 **Paths resolved from the repo root**, so the agent behaves the same from the CLI, Docker and CI.
 Blocking file writes inside async tools are pushed to a thread so they never stall the audio loop.
+
+## Phase 1: Knowledge base and database
+
+**15 short docs, deliberately mixed-language** (5 FR, 5 AR including 1 Darja FAQ, 5 EN). Real
+Algerian clinic info is scattered across French and Arabic, and callers ask in Darja, so the
+retriever must work **cross-lingually** (a Darja question hitting a French price list). Each fact
+lives in one "home" doc, with a few overlaps (prices in FR + Darja) to test consistency. Some
+things are deliberately absent (MRI, ophthalmology, cesarean prices) to evaluate "I don't know".
+
+**Markdown + tiny front matter** (`doc_id`, `lang`, `dialect`, `category`). Headings give natural
+chunk boundaries, and the metadata enables language filters and per-language full-text configs.
+No YAML dependency: the loader is 20 lines and validated by Pydantic.
+
+**Embedding model: `intfloat/multilingual-e5-small` (384 dims).** Alternatives: `bge-m3` (1024 d,
+stronger on Arabic but ~2 GB, slower CPU queries), OpenAI `text-embedding-3-small` (paid API,
+breaks the "evals run free in CI" goal). e5-small runs on CPU in CI, is fast enough for a voice
+turn budget, and covers Arabic and French. If the Phase 5 hit-rate on Darja queries is weak,
+`bge-m3` is the upgrade path (a dimension change + re-ingest).
+
+**Hybrid storage in one table.** Each chunk has `embedding vector(384)` and a generated
+`tsvector`. Vectors handle paraphrase and cross-lingual matches; full-text handles exact tokens
+that embeddings blur (doctor names, "CNAS", "Edahabia", prices). Both are fused with RRF in
+Phase 2. Keeping them in Postgres means one system to run, transactional with bookings.
+
+**Per-language text-search config.** `ts_config` is stored per chunk (`french`, `english`,
+`arabic` when the server has it, otherwise `simple`), and `tsv` is a generated column. The
+alternative of one `simple` config everywhere loses French/English stemming.
+
+**HNSW over IVFFlat.** No training step, so it can be built on an empty table at init, and it has
+better recall at this scale. `m=16, ef_construction=64` are the pgvector defaults; tuning is
+pointless for ~100 chunks.
+
+**Bookings enforced at two layers.** Pydantic validates in the app (Phase 3), and the DB keeps
+`CHECK` constraints (department enum, phone format) plus a partial unique index that blocks
+double-booking a slot. LLM-generated structured output should never be the last line of defense.
+
+**`pgvector/pgvector:0.8.7-pg17`, host port 5433.** Pinned image; pg17 rather than pg18 because
+pg18 changed the data directory layout for volumes. Port 5433 avoids clashing with a local
+Postgres.

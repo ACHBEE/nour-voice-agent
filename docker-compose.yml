@@ -1,0 +1,29 @@
+# Local infrastructure for Nour.
+#   docker compose up -d        start Postgres + pgvector (schema loads on first start)
+#   docker compose down -v      stop and wipe the database volume (re-runs schema.sql next start)
+# rag_service and agent containers are added in later phases.
+
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.7-pg17
+    container_name: nour-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-nour}
+      POSTGRES_USER: ${POSTGRES_USER:-nour}
+      # Local dev default only; override via POSTGRES_PASSWORD in your shell or .env.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nour_dev}
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 120s # first boot runs initdb + schema.sql, slow on fresh WSL disks
+    restart: unless-stopped
+
+volumes:
+  pgdata:

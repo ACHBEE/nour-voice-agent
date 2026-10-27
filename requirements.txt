@@ -4,6 +4,9 @@ livekit-plugins-noise-cancellation==0.3.2
 python-dotenv>=1.0
 pydantic>=2.7
 
+# Database
+psycopg[binary]>=3.2
+
 # Dev / CI
 pytest>=8
 ruff>=0.6
