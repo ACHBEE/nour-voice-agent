@@ -4,7 +4,7 @@ A production-style voice AI agent that answers calls for a fictional Algerian cl
 in **Arabic (incl. Darja), French and English**, answers questions from clinic documents,
 and books appointments with validated structured outputs.
 
-> Status: voice pipeline, knowledge base, and hybrid RAG service over gRPC done. LangGraph orchestrator in progress.
+> Status: voice pipeline, knowledge base, hybrid RAG over gRPC and LangGraph orchestrator (bookings + callbacks in Postgres) done. Wiring the orchestrator into the voice agent next.
 
 ## Architecture (target)
 
@@ -14,7 +14,7 @@ Caller (web / phone)
 LiveKit Agent ── VAD + multilingual turn detection + noise cancellation
    │  STT → LLM → TTS (streaming, interruptible)
    ▼
-LangGraph orchestrator ──► gRPC ► RAG service (pgvector, hybrid search, rerank)
+LangGraph orchestrator ──► gRPC ► RAG service (pgvector, hybrid search + RRF)
                        ──► book_appointment (Pydantic-validated)
                        ──► human callback / handoff
 Metrics: per-turn latency (EOU, TTFT, TTFB) → latency_log.jsonl
@@ -30,6 +30,7 @@ docker compose up -d                                  # Postgres + pgvector, loa
 python -m rag_service.ingest                          # chunk + embed clinic docs into pgvector
 python -m rag_service.server                          # RAG gRPC service on :50051
 python -m rag_service.client "Combien coûte une consultation ?"   # try a search
+python -m orchestrator.chat                           # text chat with the LangGraph orchestrator
 python -m livekit.agents download-files               # VAD + turn detector models
 python agent/agent.py console                         # talk in your terminal
 python agent/agent.py dev                             # connect to LiveKit Cloud / Playground

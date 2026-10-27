@@ -156,3 +156,53 @@ changed docs are re-chunked and re-embedded in one transaction, deleted files ar
 **Windows note.** psycopg's async mode can't use Windows' default Proactor event loop; the pool
 then retries silently forever. `rag_service/aio.run()` selects the selector loop on Windows, and
 pool opening has a timeout so a bad DB fails in seconds instead of hanging.
+
+## Phase 3: LangGraph orchestrator
+
+**One graph run per caller turn: `route -> one branch -> END`.** Branches: retrieve + grounded
+answer, smalltalk answer, booking form, callback form, safety. Alternative: a ReAct-style agent
+looping over tools. A fixed graph has a bounded number of LLM calls per turn (2), is testable
+node by node, and the safety branch can't be talked out of its rules. Multi-turn behaviour
+lives in state, not in a loop.
+
+**Per-call memory in a checkpointer (`thread_id` = call / room id).** The transcript and any
+half-filled booking or callback form survive across turns, including a clinic question asked
+in the middle of a booking. `InMemorySaver` because a call lives in one agent process and dies
+with it; durable state (bookings, callbacks) goes to Postgres. `langgraph-checkpoint-postgres`
+would only matter if calls could move between workers.
+
+**LLM extracts, code decides.** The booking node asks the LLM for a strict-JSON-schema
+extraction (`BookingExtraction`, Pydantic) and nothing else. Phone normalisation (+213, Arabic
+digits), department days and hours, date range and Friday closure are deterministic checks in
+`orchestrator/booking.py`, run on partial forms so Nour objects to "pediatrics on Tuesday" as
+soon as both are known. The final `Booking` Pydantic model is the gate before the INSERT, and a
+partial unique index in Postgres is the gate against concurrent double-booking (`SlotTaken`).
+
+**Read-backs and safety replies are templates, not generated.** What the caller confirms is
+exactly what gets saved, and a medical-advice or emergency reply can't drift. Cost: less natural
+phrasing, and 3 languages to maintain by hand (`phrases.py`, Darja for Arabic). Free-text
+answers to clinic questions stay LLM-generated, streamed, and constrained to retrieved chunks.
+
+**Refused values are remembered.** The extractor re-reads the conversation each turn, so it
+would return the refused "Tuesday" again forever. Refused values are stored per field and
+ignored on re-extraction; Nour then simply asks for that field again.
+
+**Router rewrites the search query.** The routing call also produces a standalone,
+ASR-corrected question ("et pour le cardiologue ?" -> "prix consultation cardiologue"), which
+is what goes to retrieval, at no extra LLM call.
+
+**Graceful degradation instead of errors.** Router failure: treat as a clinic question and guess
+the language from the script. Retrieval failure: answer from no documents, which makes the
+prompt say "I don't have that information" and offer a callback. Form or DB failure: keep the
+form, apologise, offer a callback. All covered by offline tests with a scripted fake LLM.
+
+**LLM via LiveKit Inference, behind a 2-method interface.** `structured()` and `stream()` in
+`orchestrator/llm.py`; same gateway and keys as the voice agent, so no extra provider key.
+LangChain chat models aren't needed for a LangGraph graph; nodes are plain async functions.
+
+**Measured cost (text chat, laptop, gpt-4.1-mini):** router 0.5-1.1 s warm (first call of a
+process 1.5-4 s), retrieval 30-90 ms, answer TTFT 0.4-1.0 s. The router call sits before the
+first spoken word, which matters on a phone line. Levers to measure in Phase 5: a smaller router
+model (gpt-4.1-nano), retrieving in parallel with routing, prewarming, and the filler phrase.
+Known grounding gap: "Do you do MRI?" was answered correctly, but the only doc that says so
+(Arabic `departments`) wasn't in the top 5, the cross-lingual retrieval weakness from Phase 2.

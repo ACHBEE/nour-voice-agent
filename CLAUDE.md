@@ -62,6 +62,7 @@ Bookings → Postgres. Metrics → latency_log.jsonl. Evals → evals/, run in G
 - Regenerate gRPC stubs: `python scripts/gen_proto.py`
 - Ingest docs into pgvector: `python -m rag_service.ingest` (`--force` after changing the embedding model)
 - RAG server / client: `python -m rag_service.server`, `python -m rag_service.client "query"`
+- Orchestrator text chat (needs Postgres + RAG server): `python -m orchestrator.chat` (`-v` for node logs, or pass turns as args)
 - Tests: `pytest` (DB-backed tests skip if Postgres isn't up)
 - Evals: `python evals/run_evals.py`
 - Latency report: `python evals/latency_report.py`
@@ -70,7 +71,7 @@ Bookings → Postgres. Metrics → latency_log.jsonl. Evals → evals/, run in G
 - [x] Phase 0 — Setup, restructure, voice agent working (live Darja call verified)
 - [x] Phase 1 — Clinic docs + DB schema + docker-compose
 - [x] Phase 2 — RAG service over gRPC
-- [ ] Phase 3 — LangGraph orchestrator + bookings
+- [x] Phase 3 — LangGraph orchestrator + bookings
 - [ ] Phase 4 — Agent ↔ orchestrator integration
 - [ ] Phase 5 — Evals + latency metrics
 - [ ] Phase 6 — Docker, CI, README, DESIGN.md, demo script
