@@ -1,8 +1,9 @@
-"""Smoke tests: the agent module imports against the pinned LiveKit API and
-the Booking schema validates. No network or API keys required."""
+"""Smoke tests: the agent module imports against the pinned LiveKit API and is wired to the
+orchestrator. No network or API keys required."""
 
-import pytest
-from pydantic import ValidationError
+import asyncio
+
+from livekit.agents import llm
 
 from agent import agent as nour
 
@@ -12,25 +13,27 @@ def test_server_and_entrypoint_registered():
     assert nour.server.setup_fnc is nour.prewarm
 
 
-def test_receptionist_exposes_tools():
-    tool_names = {t.info.name for t in nour.Receptionist().tools}
-    assert {"book_appointment", "request_human_callback"} <= tool_names
+def test_receptionist_replaces_llm_node_and_has_no_tools():
+    # Clinic facts, bookings and callbacks all live in the orchestrator now.
+    assert nour.Receptionist.llm_node is not nour.Agent.llm_node
+    assert not hasattr(nour, "CLINIC_FACTS")
 
 
-def test_booking_validation():
-    ok = nour.Booking(
-        patient_name="Amina B.",
-        phone="0661234567",
-        department="pediatrics",
-        preferred_date="2026-11-02",
-        preferred_time="10:30",
-    )
-    assert ok.language == "fr"
-    with pytest.raises(ValidationError):
-        nour.Booking(
-            patient_name="A",
-            phone="1",
-            department="x",
-            preferred_date="d",
-            preferred_time="t",
-        )
+def test_latest_user_text_picks_the_last_user_message():
+    ctx = llm.ChatContext.empty()
+    ctx.add_message(role="system", content="sys")
+    ctx.add_message(role="user", content="first")
+    ctx.add_message(role="assistant", content="reply")
+    ctx.add_message(role="user", content="  واش تخدمو نهار الجمعة؟ ")
+    assert nour.latest_user_text(ctx) == "واش تخدمو نهار الجمعة؟"
+    assert nour.latest_user_text(llm.ChatContext.empty()) == ""
+
+
+def test_unavailable_store_raises_so_forms_degrade():
+    store = nour.UnavailableStore()
+    try:
+        asyncio.run(store.slot_free("dentistry", None, None))
+    except ConnectionError:
+        pass
+    else:
+        raise AssertionError("expected ConnectionError")

@@ -1,41 +1,54 @@
 """
 Nour — multilingual voice receptionist for a fictional Algerian clinic (Clinique El Amal).
 
-Day 1: STT -> LLM -> TTS voice pipeline on LiveKit Agents, with
-  - multilingual turn detection + noise cancellation
-  - interruption handling (on by default in AgentSession)
-  - a first function tool (appointment booking, structured with Pydantic)
-  - per-turn latency metrics logged to latency_log.jsonl
+LiveKit Agents handles the real-time audio: VAD, multilingual turn detection, noise
+cancellation, streaming STT -> (reply) -> TTS, and interruptions. The reply itself comes from
+the LangGraph orchestrator (orchestrator/), which routes each caller turn to a grounded RAG
+answer (RAG service over gRPC), a booking or callback form (Postgres), or a fixed safety phrase.
 
-Day 2 replaces the stub knowledge + booking with LangGraph + pgvector RAG over gRPC.
+Per-turn latency goes to latency_log.jsonl: LiveKit's STT/LLM/TTS timings per message, plus one
+"orchestrator" row per turn with route, retrieval and answer timings.
 """
 
-import asyncio
 import json
 import logging
 import os
+import sys
+from collections.abc import AsyncIterable
 from datetime import UTC, datetime
 from pathlib import Path
 
-from dotenv import load_dotenv
-from livekit import agents
-from livekit.agents import (
+# Resolve paths from the repo root so the agent works from any cwd (CLI, Docker, CI), and make
+# the repo packages importable when run as `python agent/agent.py`.
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from dotenv import load_dotenv  # noqa: E402
+from livekit import agents  # noqa: E402
+from livekit.agents import (  # noqa: E402
     Agent,
     AgentServer,
     AgentSession,
     ConversationItemAddedEvent,
+    FlushSentinel,
     JobContext,
-    RunContext,
+    ModelSettings,
     TurnHandlingOptions,
-    function_tool,
     inference,
+    llm,
     room_io,
 )
-from livekit.plugins import noise_cancellation, silero
-from pydantic import BaseModel, Field, ValidationError
+from livekit.plugins import noise_cancellation, silero  # noqa: E402
 
-# Resolve paths from the repo root so the agent works from any cwd (CLI, Docker, CI).
-ROOT = Path(__file__).resolve().parent.parent
+from agent.turn_stream import TurnStats, filler_for, with_filler  # noqa: E402
+from orchestrator.booking import Booking, CallbackRequest  # noqa: E402
+from orchestrator.graph import Orchestrator  # noqa: E402
+from orchestrator.llm import LiveKitLLM  # noqa: E402
+from orchestrator.store import BookingStore  # noqa: E402
+from rag_service.client import RagClient  # noqa: E402
+from rag_service.config import RAG_GRPC_ADDR  # noqa: E402
+
 load_dotenv(ROOT / ".env.local")
 load_dotenv(ROOT / ".env")
 
@@ -43,10 +56,10 @@ logger = logging.getLogger("nour")
 logger.setLevel(logging.INFO)
 
 LATENCY_LOG = Path(os.getenv("LATENCY_LOG", ROOT / "latency_log.jsonl"))
-BOOKINGS_FILE = Path(os.getenv("BOOKINGS_FILE", ROOT / "bookings.jsonl"))
 
 # Per-turn latency fields from ChatMessage.metrics (livekit-agents >= 1.5).
 # User turns carry STT/endpointing delays; assistant turns carry LLM/TTS timings.
+# With the orchestrator, "llm_node_ttft" is the time to Nour's first spoken text (filler included).
 TURN_METRIC_KEYS = (
     "transcription_delay",
     "end_of_turn_delay",
@@ -55,14 +68,20 @@ TURN_METRIC_KEYS = (
     "tts_node_ttfb",
     "e2e_latency",
 )
+ORCH_METRIC_KEYS = ("route_ms", "retrieval_ms", "rag_server_ms", "answer_ttft_ms")
 
 # Models are configurable so you can swap providers without touching code.
 # Defaults use LiveKit Inference (only your LiveKit keys needed).
-# Check the exact model IDs available in your LiveKit Cloud dashboard.
 # Chosen by evals/stt/benchmark.py: the only model usable in Darja, French and English.
 STT_MODEL = os.getenv("STT_MODEL", "openai/gpt-live-transcribe:ar")
-LLM_MODEL = os.getenv("LLM_MODEL", "openai/gpt-4.1-mini")
+LLM_MODEL = os.getenv("LLM_MODEL", "openai/gpt-4.1-mini")  # used by the orchestrator's nodes
 TTS_MODEL = os.getenv("TTS_MODEL", "cartesia/sonic-3")
+
+GREETING = "Bonjour, السلام عليكم، ici Nour de la Clinique El Amal, comment puis-je vous aider ?"
+
+# Not sent to any LLM: llm_node is replaced by the orchestrator, whose prompts live in
+# orchestrator/prompts.py. Kept because Agent requires instructions.
+INSTRUCTIONS = "Nour, voice receptionist of Clinique El Amal. Replies come from the orchestrator."
 
 
 def _append_line(path: Path, line: str) -> None:
@@ -70,97 +89,76 @@ def _append_line(path: Path, line: str) -> None:
         f.write(line + "\n")
 
 
-# ---------- Structured output for bookings ----------
-class Booking(BaseModel):
-    patient_name: str = Field(..., min_length=2)
-    phone: str = Field(..., min_length=8)
-    department: str = Field(..., description="e.g. general, pediatrics, cardiology, dentistry")
-    preferred_date: str = Field(..., description="ISO date YYYY-MM-DD")
-    preferred_time: str = Field(..., description="HH:MM, 24h")
-    language: str = Field("fr", description="Language the caller used: ar, fr, en")
+def latest_user_text(chat_ctx: llm.ChatContext) -> str:
+    for item in reversed(chat_ctx.items):
+        if getattr(item, "type", None) == "message" and item.role == "user":
+            return (item.text_content or "").strip()
+    return ""
 
 
-# ---------- Temporary knowledge (replaced by RAG on Day 2) ----------
-CLINIC_FACTS = """
-Clinique El Amal (fictional), Rue des Palmiers, El Oued.
-Hours: Saturday–Thursday 08:00–18:00. Closed Friday. Emergencies 24/7.
-Departments: general medicine, pediatrics, cardiology, dentistry.
-General consultation: 2000 DZD. Specialist consultation: 3500 DZD.
-CNAS cards accepted for general medicine.
-"""
+class UnavailableStore:
+    """Used when Postgres is down at call start: forms then apologise and offer a callback
+    instead of the whole call failing (the nodes catch these errors)."""
 
-INSTRUCTIONS = f"""
-You are Nour, the voice receptionist of Clinique El Amal.
-- Reply in the caller's language and register: if they speak Algerian Darja, answer in simple Darja; Modern Standard Arabic gets Arabic; French gets French; English gets English. Callers often mix Darja and French; that's normal.
-- The caller's words reach you through automatic speech recognition, which is often wrong for Darja: dialect words may come out as similar-sounding standard Arabic words, and French words may be written in Arabic letters. Interpret the transcript by how it sounds and by context. If you genuinely can't tell what they asked, ask one short clarifying question instead of guessing.
-- This is a phone call: keep answers short (1–2 sentences), no lists, no markdown, no emojis.
-- Only state clinic facts from the knowledge below. If you don't know, say so and offer a human callback.
-- To book an appointment, collect name, phone, department, date and time, confirm them back, then call book_appointment.
-- Never give medical advice or diagnoses. For emergencies, tell the caller to come to the emergency unit or call 14.
+    async def slot_free(self, *_: object) -> bool:
+        raise ConnectionError("booking database unavailable")
 
-Knowledge:
-{CLINIC_FACTS}
-"""
+    async def create_booking(self, booking: Booking, call_id: str) -> int:
+        raise ConnectionError("booking database unavailable")
+
+    async def create_callback(self, request: CallbackRequest, call_id: str) -> int:
+        raise ConnectionError("booking database unavailable")
 
 
 class Receptionist(Agent):
-    def __init__(self) -> None:
+    def __init__(self, orchestrator: Orchestrator, call_id: str) -> None:
         super().__init__(instructions=INSTRUCTIONS)
+        self.orchestrator = orchestrator
+        self.call_id = call_id
 
     async def on_enter(self) -> None:
-        await self.session.generate_reply(
-            instructions="Greet the caller briefly in French and Arabic, introduce yourself as Nour from Clinique El Amal, and ask how you can help."
-        )
+        # Fixed text: no LLM round trip before the first word of the call.
+        self.session.say(GREETING)
 
-    @function_tool()
-    async def book_appointment(
+    async def llm_node(
         self,
-        context: RunContext,
-        patient_name: str,
-        phone: str,
-        department: str,
-        preferred_date: str,
-        preferred_time: str,
-        language: str = "fr",
-    ) -> str:
-        """Book a clinic appointment after the caller has confirmed all details.
+        chat_ctx: llm.ChatContext,
+        tools: list[llm.Tool],
+        model_settings: ModelSettings,
+    ) -> AsyncIterable[str | FlushSentinel]:
+        """One caller turn through the LangGraph orchestrator, streamed to TTS."""
+        text = latest_user_text(chat_ctx)
+        if not text:
+            return
+        stats = TurnStats()
+        chunks = self.orchestrator.turn(self.call_id, text)
+        async for piece in with_filler(chunks, filler_for(text), stats=stats):
+            yield piece
+        await self._log_turn(stats)
 
-        Args:
-            patient_name: Full name of the patient.
-            phone: Caller phone number.
-            department: general, pediatrics, cardiology or dentistry.
-            preferred_date: Date in YYYY-MM-DD format.
-            preferred_time: Time in HH:MM 24h format.
-            language: Language the caller is using (ar, fr or en).
-        """
-        try:
-            booking = Booking(
-                patient_name=patient_name,
-                phone=phone,
-                department=department,
-                preferred_date=preferred_date,
-                preferred_time=preferred_time,
-                language=language,
-            )
-        except ValidationError as e:  # let the LLM ask the caller to correct it
-            return f"Booking invalid, ask the caller to correct: {e}"
-
-        await asyncio.to_thread(_append_line, BOOKINGS_FILE, booking.model_dump_json())
-        logger.info("booking saved: %s", booking.model_dump())
-        return (
-            f"Booked {booking.department} on {booking.preferred_date} at {booking.preferred_time}."
+    async def _log_turn(self, stats: TurnStats) -> None:
+        s = await self.orchestrator.state(self.call_id)
+        row = {
+            "ts": datetime.now(UTC).isoformat(),
+            "room": self.call_id,
+            "role": "orchestrator",
+            "intent": s.get("intent"),
+            "language": s.get("language"),
+            **{k: s.get(k) for k in ORCH_METRIC_KEYS},
+            "first_text_ms": stats.first_text_ms,
+            "total_ms": stats.total_ms,
+            "filler": stats.filler,
+            "docs": [c["doc_id"] for c in s.get("chunks") or []],
+        }
+        _append_line(LATENCY_LOG, json.dumps(row, ensure_ascii=False))
+        logger.info(
+            "turn intent=%s route=%.0fms retrieval=%.0fms first_text=%sms filler=%s",
+            row["intent"],
+            row["route_ms"] or 0,
+            row["retrieval_ms"] or 0,
+            row["first_text_ms"],
+            row["filler"],
         )
-
-    @function_tool()
-    async def request_human_callback(self, context: RunContext, phone: str, reason: str) -> str:
-        """Use when the caller asks for a human or the question can't be answered.
-
-        Args:
-            phone: Caller phone number.
-            reason: Short reason for the callback.
-        """
-        logger.info("human callback requested: %s / %s", phone, reason)
-        return "Callback request registered; a staff member will call back today."
 
 
 def prewarm(proc: agents.JobProcess) -> None:
@@ -171,16 +169,35 @@ server = AgentServer()
 server.setup_fnc = prewarm
 
 
+async def _open_store() -> BookingStore | UnavailableStore:
+    try:
+        return await BookingStore.open(connect_timeout=5)
+    except Exception:  # noqa: BLE001 - keep answering questions without bookings
+        logger.exception("Postgres unavailable: bookings and callbacks disabled for this call")
+        return UnavailableStore()
+
+
 @server.rtc_session(agent_name="nour")
 async def entrypoint(ctx: JobContext) -> None:
     ctx.log_context_fields = {"room": ctx.room.name}
+    call_id = ctx.room.name
+
+    store = await _open_store()
+    rag = RagClient(RAG_GRPC_ADDR)
+    orch_llm = LiveKitLLM(LLM_MODEL)
+    orchestrator = Orchestrator(orch_llm, rag, store)
 
     session = AgentSession(
         stt=STT_MODEL,
-        llm=LLM_MODEL,
+        llm=LLM_MODEL,  # required for replies to run at all; llm_node never calls it
         tts=TTS_MODEL,
         vad=ctx.proc.userdata["vad"],
-        turn_handling=TurnHandlingOptions(turn_detection=inference.TurnDetector()),
+        turn_handling=TurnHandlingOptions(
+            turn_detection=inference.TurnDetector(),
+            # Speculative replies before the turn ends would run the stateful graph (transcript,
+            # booking form, DB writes) on text that may still change. See DESIGN.md.
+            preemptive_generation={"enabled": False},
+        ),
     )
 
     # ---- Per-turn latency (the numbers for your README) ----
@@ -201,14 +218,19 @@ async def entrypoint(ctx: JobContext) -> None:
         if len(row) > 4:  # only log turns that actually carry timings
             _append_line(LATENCY_LOG, json.dumps(row))
 
-    async def _log_usage() -> None:
+    async def _shutdown() -> None:
         logger.info("usage summary: %s", session.usage)
+        await orchestrator.end_call(call_id)
+        await rag.close()
+        await orch_llm.aclose()
+        if isinstance(store, BookingStore):
+            await store.close()
 
-    ctx.add_shutdown_callback(_log_usage)
+    ctx.add_shutdown_callback(_shutdown)
 
     await session.start(
         room=ctx.room,
-        agent=Receptionist(),
+        agent=Receptionist(orchestrator, call_id),
         room_options=room_io.RoomOptions(
             audio_input=room_io.AudioInputOptions(
                 noise_cancellation=noise_cancellation.BVC(),

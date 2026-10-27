@@ -55,7 +55,7 @@ Bookings → Postgres. Metrics → latency_log.jsonl. Evals → evals/, run in G
 - Logging via the standard logging module; no print() in services.
 
 ## Commands (update as they're created)
-- Run agent locally: `python agent/agent.py console`
+- Run agent locally: `python agent/agent.py console` (needs Postgres + RAG server running)
 - Run agent with LiveKit Cloud: `python agent/agent.py dev`
 - Download agent models: `python -m livekit.agents download-files`
 - Start infra: `docker compose up -d` (Postgres + pgvector on localhost:5433)
@@ -72,7 +72,7 @@ Bookings → Postgres. Metrics → latency_log.jsonl. Evals → evals/, run in G
 - [x] Phase 1 — Clinic docs + DB schema + docker-compose
 - [x] Phase 2 — RAG service over gRPC
 - [x] Phase 3 — LangGraph orchestrator + bookings
-- [ ] Phase 4 — Agent ↔ orchestrator integration
+- [x] Phase 4 — Agent ↔ orchestrator integration (verified in LiveKit text mode; live voice check by Houcine pending)
 - [ ] Phase 5 — Evals + latency metrics
 - [ ] Phase 6 — Docker, CI, README, DESIGN.md, demo script
 Update this checklist at the end of each phase.

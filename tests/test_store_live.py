@@ -58,9 +58,9 @@ def test_booking_insert_and_double_booking_guard():
             )
             assert cb_id > 0
         finally:
-            async with store.pool.connection() as conn:
-                await conn.execute("DELETE FROM bookings WHERE room = %s", (room,))
-                await conn.execute("DELETE FROM callbacks WHERE room = %s", (room,))
+            with store.pool.connection() as conn:
+                conn.execute("DELETE FROM bookings WHERE room = %s", (room,))
+                conn.execute("DELETE FROM callbacks WHERE room = %s", (room,))
             await store.close()
 
     run(go())

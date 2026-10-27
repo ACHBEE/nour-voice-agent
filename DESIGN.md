@@ -213,3 +213,36 @@ you back"). Fixed twice: the router prompt now counts ambulance / urgent-transpo
 emergencies and prefers emergency when unsure, and a keyword net (ambulance, SAMU, protection
 civile, إسعاف, لامبيلانس, الحماية المدنية) overrides any other intent, including when the router
 is down. Tests misroute on purpose to prove the floor holds; the prompt fix alone now routes it.
+
+## Phase 4: Voice agent <-> orchestrator
+
+**The orchestrator replaces `llm_node`, not a tool.** `Receptionist.llm_node` takes the
+caller's latest transcript, runs one graph turn and yields its text stream straight into TTS.
+Alternative: keep the voice LLM and expose the graph as function tools. That adds a third LLM
+call per turn (voice LLM deciding to call the tool) and lets a free-running LLM speak clinic
+facts outside the grounded path. LiveKit still provides VAD, turn detection, interruptions and
+the STT/TTS metrics; `llm_node_ttft` now measures time to Nour's first spoken text.
+
+**Preemptive generation off.** LiveKit starts `llm_node` speculatively before the turn ends
+(on by default, up to 3 attempts per turn). That's harmless for a stateless LLM, but this graph
+checkpoints the transcript and form, and writes bookings to Postgres: a discarded speculative
+run could advance or save a booking from a sentence the caller hadn't finished. Correctness
+over ~200-300 ms. A read-only speculative route is possible later if latency data justifies it.
+
+**Filler phrase after 1.2 s without text** (`FILLER_AFTER_MS`). Measured in text mode, a clinic
+question reaches first text in ~1.0-1.4 s (router 0.5-0.9 s, retrieval 30-65 ms, answer TTFT
+~0.4 s), so the filler fires on slow turns only. It's in the caller's language (guessed from
+the script, no LLM wait) and is followed by a `FlushSentinel` so TTS says it immediately. The
+pending graph step is cancelled if the caller interrupts.
+
+**Greeting is fixed text (`session.say`)**, not generated: no LLM round trip before the first
+word of the call.
+
+**Booking store uses psycopg's sync pool in a thread.** LiveKit runs jobs on the default event
+loop, which on Windows is Proactor, and psycopg's async mode needs a selector loop. A thread
+works on every loop and OS; bookings are a handful of writes per call. If Postgres is down at
+call start, the call still answers questions and forms apologise and offer a callback.
+
+**One "orchestrator" row per turn in `latency_log.jsonl`** (intent, language, route, retrieval,
+server-side RAG time, answer TTFT, first text, total, filler, retrieved doc ids), next to
+LiveKit's per-message STT/LLM/TTS rows. Phase 5's latency report reads both.

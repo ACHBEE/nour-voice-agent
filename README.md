@@ -4,7 +4,7 @@ A production-style voice AI agent that answers calls for a fictional Algerian cl
 in **Arabic (incl. Darja), French and English**, answers questions from clinic documents,
 and books appointments with validated structured outputs.
 
-> Status: voice pipeline, knowledge base, hybrid RAG over gRPC and LangGraph orchestrator (bookings + callbacks in Postgres) done. Wiring the orchestrator into the voice agent next.
+> Status: voice agent wired to the LangGraph orchestrator (grounded RAG answers over gRPC, bookings and callbacks in Postgres, safety phrases, filler on slow turns). Evals and latency report next.
 
 ## Architecture (target)
 
@@ -32,7 +32,7 @@ python -m rag_service.server                          # RAG gRPC service on :500
 python -m rag_service.client "Combien coûte une consultation ?"   # try a search
 python -m orchestrator.chat                           # text chat with the LangGraph orchestrator
 python -m livekit.agents download-files               # VAD + turn detector models
-python agent/agent.py console                         # talk in your terminal
+python agent/agent.py console                         # talk in your terminal (RAG server must be running)
 python agent/agent.py dev                             # connect to LiveKit Cloud / Playground
 pytest && ruff check .                                # tests + lint
 ```
