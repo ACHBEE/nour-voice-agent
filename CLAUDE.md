@@ -64,7 +64,7 @@ Bookings → Postgres. Metrics → latency_log.jsonl. Evals → evals/, run in G
 - Latency report: `python evals/latency_report.py`
 
 ## Progress
-- [x] Phase 0 — Setup, restructure, voice agent working (greeting verified; Darja STT check pending)
+- [x] Phase 0 — Setup, restructure, voice agent working (live Darja call verified)
 - [x] Phase 1 — Clinic docs + DB schema + docker-compose
 - [ ] Phase 2 — RAG service over gRPC
 - [ ] Phase 3 — LangGraph orchestrator + bookings
